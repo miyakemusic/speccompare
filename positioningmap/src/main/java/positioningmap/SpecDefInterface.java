@@ -6,4 +6,8 @@ public interface SpecDefInterface {
 
 	String name(SpecDef specDef);
 
+	void category(SpecDef specDef, String category);
+
+	void name(SpecDef specDef, String name);
+
 }

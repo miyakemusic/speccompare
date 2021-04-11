@@ -36,9 +36,6 @@ public class SpecDef {
 		return id;
 	}
 
-	public String unit() {
-		return unit;
-	}
 	public String getUnit() {
 		return unit;
 	}
@@ -66,14 +63,33 @@ public class SpecDef {
 	public SpecTypeEnum getSpecType() {
 		return specType;
 	}
-	public String category() {
+	public void setSpecType(String specType) {
+		this.specType = SpecTypeEnum.valueOf(specType);
+	}
+	
+	@JsonIgnore
+	public String getCategory() {
 		return specInterface.category(this);
 	}
+	
+	@JsonIgnore
+	public void setCategory(String category) {
+		this.specInterface.category(this, category);
+	}
+	
+	
 	public void setSpecInterface(SpecDefInterface specDefInterface) {
 		this.specInterface = specDefInterface;
 	}
-	public String name() {
+	
+	@JsonIgnore
+	public String getName() {
 		return specInterface.name(this);
+	}
+	
+	@JsonIgnore
+	public void setName(String name) {
+		this.specInterface.name(this, name);
 	}
 
 }

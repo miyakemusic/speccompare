@@ -2,6 +2,7 @@ package positioningmap;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,9 +15,9 @@ public class SpecSheet {
 			
 	private String product;
 	private Map<String, ProductSpec> productSpecs = new HashMap<>();
-	
 	private Map<String, SpecCategory> categories = new LinkedHashMap<>();
-	
+
+
 	public SpecSheet() {}
 	
 	public SpecSheet(String product) {
@@ -27,16 +28,31 @@ public class SpecSheet {
 		return getCategory(specCategory).createSpec(specName, specType, unit, better);
 	}
 
+
+	public SpecDef newSpec() {
+		if (this.categories.size() > 0) {
+			String cat = this.categories.keySet().iterator().next();
+			return addSpec(cat, "New Spec", SpecTypeEnum.Numeric, "", Better.None);
+		}
+		else {
+			return this.addSpec("Category", "New Spec Name", SpecTypeEnum.Numeric, "", Better.None);
+		}
+	}
+	
 	private SpecCategory getCategory(String specCategory) {
 		if (!this.categories.containsKey(specCategory)) {
-			this.categories.put(specCategory, new SpecCategory());
+			SpecCategory newCategory = new SpecCategory();
+			this.categories.put(specCategory, newCategory);
 		}
 		SpecCategory category = this.categories.get(specCategory);
 		return category;
 	}
 
 	public SpecDef addSpec(String specCategory, String specName, SpecTypeEnum specType) {
-		return getCategory(specCategory).createSpec(specName, specType, "", null);
+		SpecCategory category = getCategory(specCategory);
+		SpecDef ret = category.createSpec(specName, specType, "", null);
+		category.init(specInterface);
+		return ret;
 	}
 
 	public Set<String> categories() {
@@ -63,6 +79,17 @@ public class SpecSheet {
 			return null;
 		}
 
+		@Override
+		public void onCategoryChange(SpecCategory specCategory, String category, SpecDef specDef) {
+			if (!categories.containsKey(category)) {
+				SpecCategory newCategory = new SpecCategory();
+				newCategory.init(specInterface);
+				categories.put(category, newCategory);
+			}
+
+			categories.get(category).add(specDef);	
+		}
+
 	};
 	
 	public ProductSpec addProduct(String vendorName, String modelName) {
@@ -72,7 +99,6 @@ public class SpecSheet {
 	}
 
 	public Map<String, ProductSpec> products() {
-		// TODO Auto-generated method stub
 		return this.productSpecs;
 	}
 
@@ -129,9 +155,22 @@ public class SpecSheet {
 		return specHolder;
 	}
 
+	public List<String> units() {
+		Set<String> ret = new HashSet<>();
+		this.categories.values().forEach(v -> {
+			v.getSpecs().values().forEach(vv -> {
+				ret.add(vv.getUnit());
+			});
+		});
+		return new ArrayList<String>(ret);
+	}
+
+
 }
 interface SpecInterface {
 	SpecTypeEnum type(String id);
 
 	String category(SpecCategory specCategory);
+
+	void onCategoryChange(SpecCategory specCategory, String category, SpecDef specDef);
 }

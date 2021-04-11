@@ -28,7 +28,7 @@ public class Main {
 
 	public enum Better {
 		Higher,
-		Lower, Wider, Narrower
+		Lower, Wider, Narrower, None
 	}
 	
 	public enum SpecTypeEnum {
@@ -77,7 +77,25 @@ public class Main {
 		};
 		
 		updateModel(specOtdr, model);
-		new TableFrame(model) {
+		
+		TableFrameInterface tableFrameInterface = new TableFrameInterface() {
+			@Override
+			public List<String> categories() {
+				return new ArrayList<String>(specOtdr.categories());
+			}
+
+			@Override
+			public List<String> units() {
+				return specOtdr.units();
+			}
+
+			@Override
+			public SpecDef createSpecDef() {
+				return specOtdr.newSpec();
+			}
+		};
+		
+		new TableFrame(model, tableFrameInterface) {
 
 			@Override
 			void save() {
@@ -256,8 +274,8 @@ public class Main {
 //				line.add(spec.getSpecType().toString());
 				line.add(category);
 				String specWithUnit = specName;
-				if (!spec.unit().isBlank()) {
-					specWithUnit = specName + " (" + spec.unit() + ")";
+				if (!spec.getUnit().isBlank()) {
+					specWithUnit = specName + " (" + spec.getUnit() + ")";
 				}
 				line.add(specWithUnit);
 //				line.add(spec.unit());

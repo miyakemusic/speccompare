@@ -33,7 +33,7 @@ public class ValueEditor extends JDialog {
 		super(parent);
 		setLocationRelativeTo(null);
 		
-		this.setTitle(model + " " + specDef.category() + " - " + specDef.name());
+		this.setTitle(model + " " + specDef.getCategory() + " - " + specDef.getName());
 		this.setSize(new Dimension(400, 230));
 		this.getContentPane().setLayout(new BorderLayout());
 				
@@ -43,7 +43,7 @@ public class ValueEditor extends JDialog {
 		
 		JPanel title = new JPanel();
 		base.add(title);
-		title.add(new JLabel("<HTML>" + model + "<br>" + specDef.category() + " - " + specDef.name() + "</HTML>"));
+		title.add(new JLabel("<HTML>" + model + "<br>" + specDef.getCategory() + " - " + specDef.getName() + "</HTML>"));
 		
 		
 		JPanel guarantee = new JPanel();
@@ -128,14 +128,14 @@ public class ValueEditor extends JDialog {
 		if (specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) {
 			panel.setPreferredSize(new Dimension(200, 80));
 			panel.add(createTextField(specValue, "X"));
-			panel.add(new JLabel(specDef.unit()));
+			panel.add(new JLabel(specDef.getUnit()));
 		}
 		else if ((specDef.getSpecType().compareTo(SpecTypeEnum.Range) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.TwoDmensionalSize) == 0)) {
 			panel.setPreferredSize(new Dimension(300, 80));
 			panel.add(createTextField(specValue, "X"));
 			panel.add(new JLabel(" - "));
 			panel.add(createTextField(specValue, "Y"));
-			panel.add(new JLabel(specDef.unit()));			
+			panel.add(new JLabel(specDef.getUnit()));			
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0) {
 			panel.setPreferredSize(new Dimension(200, 80));

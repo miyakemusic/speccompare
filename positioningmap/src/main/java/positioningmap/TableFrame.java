@@ -1,31 +1,34 @@
 package positioningmap;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.border.TitledBorder;
 import javax.swing.table.AbstractTableModel;
 
-import positioningmap.Main.SpecTypeEnum;
+interface TableFrameInterface {
+
+	List<String> categories();
+
+	List<String> units();
+
+	SpecDef createSpecDef();
+	
+}
 
 public abstract class TableFrame extends JFrame {
 
@@ -42,10 +45,12 @@ public abstract class TableFrame extends JFrame {
 	abstract SpecHolder getSpecValue(int row, int col);
 	abstract String getModel(int col);
 	
-	public TableFrame(AbstractTableModel model) {
+	private JTable table = null;
+	
+	public TableFrame(AbstractTableModel model, TableFrameInterface tableFrameInterface) {
 		this.setSize(new Dimension(1000, 800));
 		this.getContentPane().setLayout(new BorderLayout());
-	
+		this.setLocationRelativeTo(null);
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout());
 		
@@ -75,16 +80,14 @@ public abstract class TableFrame extends JFrame {
 		createItem.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JComboBox<String> combo = new JComboBox<>();
-				
-				Arrays.asList(SpecTypeEnum.values()).forEach(v -> combo.addItem(v.toString()));
-				JOptionPane.showMessageDialog( null, combo, "Spec type", JOptionPane.QUESTION_MESSAGE);
+				SpecDef specDef = tableFrameInterface.createSpecDef();
+				showDefEditor(specDef, tableFrameInterface);
 				newItem();
 			}	
 		});
 		
 		this.getContentPane().add(panel, BorderLayout.NORTH);
-		JTable table;
+		
 		this.getContentPane().add(new JScrollPane(table = new JTable(model)), BorderLayout.CENTER);
 				
 		JPopupMenu popup = new JPopupMenu();
@@ -93,7 +96,7 @@ public abstract class TableFrame extends JFrame {
 		editMenu.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				doEdit(table);
+				doEdit(table, tableFrameInterface);
 			}
 		});
 		
@@ -109,14 +112,14 @@ public abstract class TableFrame extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2) {
-					doEdit(table);
+					doEdit(table, tableFrameInterface);
 				}
 			}
 			
 			
 		});
 	}
-	protected void showEditor(String model, SpecDef specDef, SpecHolder specValue) {
+	protected void showValueEditor(String model, SpecDef specDef, SpecHolder specValue) {
 		ValueEditor dialog = new ValueEditor(this, model, specDef, specValue);
 		dialog.setModal(true);
 		dialog.setVisible(true);
@@ -124,16 +127,28 @@ public abstract class TableFrame extends JFrame {
 			onUpdate();
 		}
 	}
-	private void doEdit(JTable table) {
+	private void doEdit(JTable table, TableFrameInterface tableFrameInterface) {
 		int row = table.getSelectedRow();
 		int col = table.getSelectedColumn();
-		if (col < 2) {
-			return;
+		if (col == 1) {
+			SpecDef ret = getSpecDef(row);
+			showDefEditor(ret, tableFrameInterface);
 		}
-		String model = getModel(col);
-		SpecDef ret = getSpecDef(row);
-		SpecHolder specValue = getSpecValue(row, col);	
-		showEditor(model, ret, specValue);
+		else if (col >= 2) {
+			String model = getModel(col);
+			SpecDef ret = getSpecDef(row);
+			SpecHolder specValue = getSpecValue(row, col);	
+			showValueEditor(model, ret, specValue);
+		}
+
+	}
+	private void showDefEditor(SpecDef spedDef, TableFrameInterface tableFrameInterface) {
+		DefEditor dialog = new DefEditor(this, spedDef, tableFrameInterface.categories(), tableFrameInterface.units());
+		dialog.setModal(true);
+		dialog.setVisible(true);
+		if (dialog.ok()) {
+			onUpdate();
+		}
 	}
 
 }

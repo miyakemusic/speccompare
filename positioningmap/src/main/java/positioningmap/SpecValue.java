@@ -79,6 +79,9 @@ public class SpecValue {
 		if (this.string.isBlank()) {
 			this.defined = false;
 		}
+		else {
+			this.defined = true;
+		}
 	}
 
 	public void setX(Double x) {
