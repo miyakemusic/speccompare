@@ -91,5 +91,11 @@ public class SpecDef {
 	public void setName(String name) {
 		this.specInterface.name(this, name);
 	}
+	public void moveUp() {
+		specInterface.moveUp(this);
+	}
+	public void moveDown() {
+		specInterface.moveDown(this);
+	}
 
 }

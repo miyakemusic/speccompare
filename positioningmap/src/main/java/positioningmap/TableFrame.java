@@ -10,7 +10,6 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -44,6 +43,8 @@ public abstract class TableFrame extends JFrame {
 	abstract SpecDef getSpecDef(int row);
 	abstract SpecHolder getSpecValue(int row, int col);
 	abstract String getModel(int col);
+	abstract void moveUp(int row, int col);
+	abstract void moveDown(int row, int col);
 	
 	private JTable table = null;
 	
@@ -100,6 +101,19 @@ public abstract class TableFrame extends JFrame {
 			}
 		});
 		
+		popup.add(createMenuItem("Move Up", new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				moveUp(table.getSelectedRow(), table.getSelectedColumn());
+			}
+		}));
+		popup.add(createMenuItem("Move Down", new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				moveDown(table.getSelectedRow(), table.getSelectedColumn());
+			}
+		}));
+		
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -118,6 +132,11 @@ public abstract class TableFrame extends JFrame {
 			
 			
 		});
+	}
+	private JMenuItem createMenuItem(String string, ActionListener actionListener) {
+		JMenuItem menuItem = new JMenuItem(string);
+		menuItem.addActionListener(actionListener);
+		return menuItem;
 	}
 	protected void showValueEditor(String model, SpecDef specDef, SpecHolder specValue) {
 		ValueEditor dialog = new ValueEditor(this, model, specDef, specValue);

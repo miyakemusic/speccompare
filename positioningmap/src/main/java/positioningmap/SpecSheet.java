@@ -32,7 +32,9 @@ public class SpecSheet {
 	public SpecDef newSpec() {
 		if (this.categories.size() > 0) {
 			String cat = this.categories.keySet().iterator().next();
-			return addSpec(cat, "New Spec", SpecTypeEnum.Numeric, "", Better.None);
+			SpecDef ret = addSpec(cat, "New Spec", SpecTypeEnum.Numeric, "", Better.None);
+			categories.get(cat).init(specInterface);
+			return ret;
 		}
 		else {
 			return this.addSpec("Category", "New Spec Name", SpecTypeEnum.Numeric, "", Better.None);
@@ -165,6 +167,12 @@ public class SpecSheet {
 		return new ArrayList<String>(ret);
 	}
 
+	public void moveUp(String category) {
+		new MapMover<String, SpecCategory>(this.categories).moveUp(this.getCategory(category));
+	}
+	public void moveDown(String category) {
+		new MapMover<String, SpecCategory>(this.categories).moveDown(this.getCategory(category));
+	}
 
 }
 interface SpecInterface {

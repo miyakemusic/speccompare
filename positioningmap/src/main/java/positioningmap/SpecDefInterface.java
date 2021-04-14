@@ -10,4 +10,8 @@ public interface SpecDefInterface {
 
 	void name(SpecDef specDef, String name);
 
+	void moveUp(SpecDef specDef);
+
+	void moveDown(SpecDef specDef);
+
 }

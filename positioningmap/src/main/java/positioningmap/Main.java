@@ -13,6 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Main {
 
+	protected static final int SPEC_COL = 1;
+	protected static final int CATEGORY_COL = 0;
+	
 	public static void main(String[] args) {
 		new Main();
 	}
@@ -116,6 +119,11 @@ public class Main {
 
 			@Override
 			SpecDef getSpecDef(int row) {
+				SpecDef specDef = specDefByRow(row);
+				return specDef;
+			}
+
+			private SpecDef specDefByRow(int row) {
 				String id = list.get(row).get(0).toString();
 				SpecDef specDef = specOtdr.specDef(id);
 				return specDef;
@@ -137,6 +145,32 @@ public class Main {
 
 			@Override
 			void onUpdate() {
+				updateModel(specOtdr, model);
+			}
+
+			@Override
+			void moveUp(int row, int col) {
+				if (col == SPEC_COL) {
+					SpecDef specDef = specDefByRow(row);
+					specDef.moveUp();
+				}
+				else if (col == CATEGORY_COL) {
+					String category = list.get(row).get(1);
+					specOtdr.moveUp(category);
+				}
+				updateModel(specOtdr, model);
+			}
+
+			@Override
+			void moveDown(int row, int col) {
+				if (col == SPEC_COL) {
+					SpecDef specDef = specDefByRow(row);
+					specDef.moveDown();
+				}
+				else if (col == CATEGORY_COL) {
+					String category = list.get(row).get(1);
+					specOtdr.moveDown(category);	
+				}
 				updateModel(specOtdr, model);
 			}
 		}.setVisible(true);
