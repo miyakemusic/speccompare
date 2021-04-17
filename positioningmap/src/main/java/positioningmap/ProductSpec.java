@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import positioningmap.Main.SpecTypeEnum;
 
-public class ProductSpec {
+public class ProductSpec implements Cloneable {
 
 	private String productName;
 	private Map<String, SpecHolder> values = new HashMap<>();
@@ -128,4 +128,19 @@ public class ProductSpec {
 		this.specInterface = specInterface;
 	}
 
+	@Override
+	public ProductSpec clone() {
+		try {
+			ProductSpec ret = (ProductSpec)super.clone();
+			ret.specInterface = this.specInterface;
+			for (Map.Entry<String, SpecHolder> entry: this.values.entrySet()) {
+				ret.values.put(entry.getKey(), entry.getValue().clone());
+			}
+			return ret;
+		} catch (CloneNotSupportedException e) {
+			e.printStackTrace();
+		}
+		return null;
+		
+	}
 }

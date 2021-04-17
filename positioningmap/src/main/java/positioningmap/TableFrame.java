@@ -5,6 +5,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -17,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.AbstractTableModel;
 
 interface TableFrameInterface {
@@ -45,8 +48,16 @@ public abstract class TableFrame extends JFrame {
 	abstract String getModel(int col);
 	abstract void moveUp(int row, int col);
 	abstract void moveDown(int row, int col);
+	abstract void changeProductName(String oldName, String newName);
+	abstract void copyProduct(String name);
+	abstract void moveLeft(String name);
+	abstract void moveRight(String name);
+	abstract void copyCells(int[] fromRows, String fromColumn, String toColumn);
 	
 	private JTable table = null;
+	protected String selecteHeaderName;
+	private int copiedColumn;
+	private int[] copiedRows;
 	
 	public TableFrame(AbstractTableModel model, TableFrameInterface tableFrameInterface) {
 		this.setSize(new Dimension(1000, 800));
@@ -113,7 +124,8 @@ public abstract class TableFrame extends JFrame {
 				moveDown(table.getSelectedRow(), table.getSelectedColumn());
 			}
 		}));
-		
+		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		table.setCellSelectionEnabled(true);
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -129,10 +141,89 @@ public abstract class TableFrame extends JFrame {
 					doEdit(table, tableFrameInterface);
 				}
 			}
-			
+		});
+		
+		JPopupMenu popupHeader = new JPopupMenu();
+		table.getTableHeader().addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
+					int col = table.columnAtPoint(e.getPoint());
+			        selecteHeaderName = table.getColumnName(col);
+					popupHeader.show(table.getTableHeader(), e.getX(), e.getY());
+				}
+			}
+		});
+		table.addKeyListener(new KeyAdapter() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.isControlDown() && (e.getKeyCode()== KeyEvent.VK_C)) {
+					copyCell();
+				}
+				else if (e.isControlDown() && (e.getKeyCode()== KeyEvent.VK_V)) {
+					pastCell();
+				}
+			}
 			
 		});
+		JMenuItem menuEditName = new JMenuItem("Edit Name");
+		popupHeader.add(menuEditName);
+		menuEditName.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (selecteHeaderName != null && !selecteHeaderName.isEmpty()) {
+					String value = JOptionPane.showInputDialog(this, selecteHeaderName);
+					if (value != null && !value.isEmpty()) {
+						changeProductName(selecteHeaderName, value);
+					}
+				}
+			}
+		});
+		
+		JMenuItem menuCopy = new JMenuItem("Copy");
+		popupHeader.add(menuCopy);
+		menuCopy.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (selecteHeaderName != null && !selecteHeaderName.isBlank()) {
+					copyProduct(selecteHeaderName);
+				}
+			}
+		});
+		
+		JMenuItem menuToLeft = new JMenuItem("Move to left");
+		popupHeader.add(menuToLeft);
+		menuToLeft.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (selecteHeaderName != null && !selecteHeaderName.isBlank()) {
+					moveLeft(selecteHeaderName);
+				}
+			}
+		});
+		
+		JMenuItem menuToRight = new JMenuItem("Move to Right");
+		popupHeader.add(menuToRight);
+		menuToRight.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (selecteHeaderName != null && !selecteHeaderName.isBlank()) {
+					moveRight(selecteHeaderName);
+				}
+			}
+		});
 	}
+	
+	protected void pastCell() {
+		copyCells(this.copiedRows, table.getColumnName(this.copiedColumn), this.table.getColumnName(table.getSelectedColumn()));
+	}
+	
+	protected void copyCell() {
+		this.copiedRows = table.getSelectedRows();
+		this.copiedColumn = table.getSelectedColumn();
+	}
+	
 	private JMenuItem createMenuItem(String string, ActionListener actionListener) {
 		JMenuItem menuItem = new JMenuItem(string);
 		menuItem.addActionListener(actionListener);

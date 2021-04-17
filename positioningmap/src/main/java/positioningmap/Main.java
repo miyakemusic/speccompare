@@ -173,6 +173,40 @@ public class Main {
 				}
 				updateModel(specOtdr, model);
 			}
+
+			@Override
+			void changeProductName(String oldName, String newName) {
+				specOtdr.changeProductName(oldName, newName);
+				updateModel(specOtdr, model);
+			}
+
+			@Override
+			void copyProduct(String name) {
+				specOtdr.copyProduct(name);
+				updateModel(specOtdr, model);
+			}
+
+			@Override
+			void moveLeft(String name) {
+				specOtdr.moveLeft(name);
+				updateModel(specOtdr, model);
+			}
+
+			@Override
+			void moveRight(String name) {
+				specOtdr.moveRight(name);
+				updateModel(specOtdr, model);
+			}
+
+			@Override
+			void copyCells(int[] fromRows, String fromColumn, String toColumn) {
+				List<String> ids = new ArrayList<>();
+				for (int row : fromRows) {
+					ids.add(list.get(row).get(0));
+				}
+				specOtdr.copyCells(ids, fromColumn, toColumn);
+				updateModel(specOtdr, model);
+			}
 		}.setVisible(true);
 	}
 

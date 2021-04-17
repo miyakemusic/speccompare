@@ -174,6 +174,34 @@ public class SpecSheet {
 		new MapMover<String, SpecCategory>(this.categories).moveDown(this.getCategory(category));
 	}
 
+	public void changeProductName(String oldName, String newName) {
+		ProductSpec spec = this.productSpecs.get(oldName);
+		this.productSpecs.remove(oldName);
+		this.productSpecs.put(newName, spec);
+	}
+
+	public void copyProduct(String name) {
+		ProductSpec spec = this.productSpecs.get(name);
+		this.productSpecs.put("Copy of " + name, spec.clone());
+	}
+
+	public void moveLeft(String name) {
+		new MapMover<String, ProductSpec>(this.productSpecs).moveUp(productSpecs.get(name));
+	}
+
+	public void moveRight(String name) {
+		new MapMover<String, ProductSpec>(this.productSpecs).moveDown(productSpecs.get(name));
+	}
+
+	public void copyCells(List<String> fromRows, String fromColumn, String toColumn) {
+//		List<String> producs = new ArrayList<String>(this.productSpecs.keySet());
+		ProductSpec from = this.productSpecs.get(fromColumn);
+		ProductSpec to = this.productSpecs.get(toColumn);
+		for (String id : fromRows) {
+			to.getValues().put(id, from.getValues().get(id).clone());
+		}
+	}
+
 }
 interface SpecInterface {
 	SpecTypeEnum type(String id);

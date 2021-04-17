@@ -1,6 +1,6 @@
 package positioningmap;
 
-public class SpecValue {
+public class SpecValue implements Cloneable {
 
 	public static final String INITIAL_VALUE = "-Infinity";
 	
@@ -111,5 +111,15 @@ public class SpecValue {
 		this.defined = defined;
 	}
 
+	@Override
+	public SpecValue clone() {
+		try {
+			return (SpecValue)super.clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
 	
 }
