@@ -100,8 +100,10 @@ public abstract class TableFrame extends JFrame {
 		
 		this.getContentPane().add(panel, BorderLayout.NORTH);
 		
-		this.getContentPane().add(new JScrollPane(table = new JTable(model)), BorderLayout.CENTER);
-				
+		JScrollPane scrollPane;
+		this.getContentPane().add(scrollPane = new JScrollPane(table = new JTable(model)), BorderLayout.CENTER);
+		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		
 		JPopupMenu popup = new JPopupMenu();
 		JMenuItem editMenu = new JMenuItem("Edit");
 		popup.add(editMenu);
@@ -167,19 +169,19 @@ public abstract class TableFrame extends JFrame {
 			}
 			
 		});
-		JMenuItem menuEditName = new JMenuItem("Edit Name");
-		popupHeader.add(menuEditName);
-		menuEditName.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (selecteHeaderName != null && !selecteHeaderName.isEmpty()) {
-					String value = JOptionPane.showInputDialog(this, selecteHeaderName);
-					if (value != null && !value.isEmpty()) {
-						changeProductName(selecteHeaderName, value);
-					}
-				}
-			}
-		});
+//		JMenuItem menuEditName = new JMenuItem("Edit Name");
+//		popupHeader.add(menuEditName);
+//		menuEditName.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//				if (selecteHeaderName != null && !selecteHeaderName.isEmpty()) {
+//					String value = JOptionPane.showInputDialog(this, selecteHeaderName);
+//					if (value != null && !value.isEmpty()) {
+//						changeProductName(selecteHeaderName, value);
+//					}
+//				}
+//			}
+//		});
 		
 		JMenuItem menuCopy = new JMenuItem("Copy");
 		popupHeader.add(menuCopy);
@@ -211,6 +213,28 @@ public abstract class TableFrame extends JFrame {
 				if (selecteHeaderName != null && !selecteHeaderName.isBlank()) {
 					moveRight(selecteHeaderName);
 				}
+			}
+		});
+		
+		JMenuItem menuRename = new JMenuItem("Rename");
+		popupHeader.add(menuRename);
+		menuRename.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String[] tmp = 
+						selecteHeaderName.split(";");
+				ProductKey key = new ProductKey();
+				key.setProductName(tmp[1]);
+				key.setVendorName(tmp[0]);
+				new FieldEditor(key) {
+
+					@Override
+					void onOk() {
+						changeProductName(selecteHeaderName, key.getVendorName() + ";" + key.getProductName());
+					}
+					
+				}.setVisible(true);
+
 			}
 		});
 	}

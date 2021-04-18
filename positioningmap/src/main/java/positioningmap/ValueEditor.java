@@ -26,6 +26,10 @@ import javax.swing.border.TitledBorder;
 import positioningmap.Main.SpecTypeEnum;
 
 public class ValueEditor extends JDialog {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Map<SpecKey, JComponent> inputs = new HashMap<>();
 	private boolean ok = false;
 	

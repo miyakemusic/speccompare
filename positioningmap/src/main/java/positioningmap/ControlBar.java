@@ -9,11 +9,11 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 
-public abstract class ContorlBar extends JPanel {
+public abstract class ControlBar extends JPanel {
 	abstract void onOk();
 	abstract void onCancel();
 	private boolean ok = false;
-	public ContorlBar() {
+	public ControlBar() {
 		this.setLayout(new FlowLayout());
 		this.setSize(new Dimension(200, 30));
 		JButton okButton = new JButton("OK");
