@@ -15,6 +15,7 @@ public class SpecDef {
 	private Better better;
 	private List<String> choices = new ArrayList<>();
 	private String id;
+	private String parentId = "";
 	
 	@JsonIgnore
 	private SpecDefInterface specInterface;
@@ -27,6 +28,12 @@ public class SpecDef {
 		this.id = String.valueOf(this.hashCode());
 	}
 
+	public String getParentId() {
+		return parentId;
+	}
+	public void setParentId(String parentId) {
+		this.parentId = parentId;
+	}
 	public SpecDef choice(String choice) {
 		this.choices.add(choice);
 		return this;

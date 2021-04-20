@@ -79,7 +79,7 @@ public class Main {
 			
 		};
 		
-		updateModel(specOtdr, model);
+		updateModel(specOtdr, model, false);
 		
 		TableFrameInterface tableFrameInterface = new TableFrameInterface() {
 			@Override
@@ -96,6 +96,12 @@ public class Main {
 			public SpecDef createSpecDef() {
 				return specOtdr.newSpec();
 			}
+
+			@Override
+			public Map<String, String> parents() {
+				return specOtdr.allIds();
+			}
+
 		};
 		
 		new TableFrame(model, tableFrameInterface) {
@@ -108,7 +114,7 @@ public class Main {
 			@Override
 			void newProduct(String value) {
 				specOtdr.addProduct("EXFO", value);
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, true);
 			}
 
 			@Override
@@ -145,7 +151,7 @@ public class Main {
 
 			@Override
 			void onUpdate() {
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, true);
 			}
 
 			@Override
@@ -158,7 +164,7 @@ public class Main {
 					String category = list.get(row).get(1);
 					specOtdr.moveUp(category);
 				}
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, false);
 			}
 
 			@Override
@@ -171,31 +177,31 @@ public class Main {
 					String category = list.get(row).get(1);
 					specOtdr.moveDown(category);	
 				}
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, false);
 			}
 
 			@Override
-			void changeProductName(String oldName, String newName) {
+			void rename(String oldName, String newName) {
 				specOtdr.changeProductName(oldName, newName);
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, true);
 			}
 
 			@Override
 			void copyProduct(String name) {
 				specOtdr.copyProduct(name);
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, true);
 			}
 
 			@Override
 			void moveLeft(String name) {
 				specOtdr.moveLeft(name);
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, true);
 			}
 
 			@Override
 			void moveRight(String name) {
 				specOtdr.moveRight(name);
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, true);
 			}
 
 			@Override
@@ -205,7 +211,7 @@ public class Main {
 					ids.add(list.get(row).get(0));
 				}
 				specOtdr.copyCells(ids, fromColumn, toColumn);
-				updateModel(specOtdr, model);
+				updateModel(specOtdr, model, false);
 			}
 		}.setVisible(true);
 	}
@@ -328,7 +334,7 @@ public class Main {
 		}
 	}
 
-	private void updateModel(SpecSheet specOtdr, AbstractTableModel model) {
+	private void updateModel(SpecSheet specOtdr, AbstractTableModel model, boolean structureChanged) {
 		this.list.clear();
 		this.title.clear();
 		
@@ -362,6 +368,12 @@ public class Main {
 		for (String product : ps.keySet()) {
 			title.add(product);
 		}
-		model.fireTableStructureChanged();
+		if (structureChanged) {
+			model.fireTableStructureChanged();
+		}
+		else {
+			model.fireTableDataChanged();
+		}
+
 	}
 }

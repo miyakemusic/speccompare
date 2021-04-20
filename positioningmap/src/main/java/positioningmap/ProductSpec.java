@@ -1,6 +1,7 @@
 package positioningmap;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -133,6 +134,9 @@ public class ProductSpec implements Cloneable {
 		try {
 			ProductSpec ret = (ProductSpec)super.clone();
 			ret.specInterface = this.specInterface;
+			ret.productName = new String(this.productName);
+		
+			ret.values = new LinkedHashMap<String, SpecHolder>();
 			for (Map.Entry<String, SpecHolder> entry: this.values.entrySet()) {
 				ret.values.put(entry.getKey(), entry.getValue().clone());
 			}

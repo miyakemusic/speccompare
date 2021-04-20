@@ -1,26 +1,46 @@
 package positioningmap;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 interface TableFrameInterface {
 
@@ -29,7 +49,8 @@ interface TableFrameInterface {
 	List<String> units();
 
 	SpecDef createSpecDef();
-	
+
+	Map<String, String> parents();	
 }
 
 public abstract class TableFrame extends JFrame {
@@ -48,7 +69,7 @@ public abstract class TableFrame extends JFrame {
 	abstract String getModel(int col);
 	abstract void moveUp(int row, int col);
 	abstract void moveDown(int row, int col);
-	abstract void changeProductName(String oldName, String newName);
+	abstract void rename(String oldName, String newName);
 	abstract void copyProduct(String name);
 	abstract void moveLeft(String name);
 	abstract void moveRight(String name);
@@ -104,6 +125,27 @@ public abstract class TableFrame extends JFrame {
 		this.getContentPane().add(scrollPane = new JScrollPane(table = new JTable(model)), BorderLayout.CENTER);
 		table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		
+		MultiLineHeaderRenderer renderer = new MultiLineHeaderRenderer();
+		Enumeration<TableColumn> enumK = table.getColumnModel().getColumns();
+		while (enumK.hasMoreElements())	{
+			((TableColumn) enumK.nextElement()).setHeaderRenderer(renderer);
+		}
+			
+		table.getModel().addTableModelListener(new TableModelListener() {
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						Enumeration<TableColumn> enumK = table.getColumnModel().getColumns();
+						while (enumK.hasMoreElements())	{
+							((TableColumn) enumK.nextElement()).setHeaderRenderer(renderer);
+						}
+					}
+				});
+
+			}
+		});
 		JPopupMenu popup = new JPopupMenu();
 		JMenuItem editMenu = new JMenuItem("Edit");
 		popup.add(editMenu);
@@ -221,16 +263,21 @@ public abstract class TableFrame extends JFrame {
 		menuRename.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String[] tmp = 
-						selecteHeaderName.split(";");
 				ProductKey key = new ProductKey();
-				key.setProductName(tmp[1]);
-				key.setVendorName(tmp[0]);
+				if (selecteHeaderName.contains("\n")) {
+					String[] tmp = 	selecteHeaderName.split("\n");
+					key.setProductName(tmp[1]);
+					key.setVendorName(tmp[0]);
+				}
+				else {
+					key.setVendorName("");
+					key.setProductName(selecteHeaderName);
+				}
 				new FieldEditor(key) {
 
 					@Override
 					void onOk() {
-						changeProductName(selecteHeaderName, key.getVendorName() + ";" + key.getProductName());
+						rename(selecteHeaderName, key.getVendorName() + "\n" + key.getProductName());
 					}
 					
 				}.setVisible(true);
@@ -277,7 +324,10 @@ public abstract class TableFrame extends JFrame {
 
 	}
 	private void showDefEditor(SpecDef spedDef, TableFrameInterface tableFrameInterface) {
-		DefEditor dialog = new DefEditor(this, spedDef, tableFrameInterface.categories(), tableFrameInterface.units());
+		DefEditor dialog = new DefEditor(this, spedDef, 
+				tableFrameInterface.categories(), 
+				tableFrameInterface.units(),
+				tableFrameInterface.parents());
 		dialog.setModal(true);
 		dialog.setVisible(true);
 		if (dialog.ok()) {
@@ -286,3 +336,35 @@ public abstract class TableFrame extends JFrame {
 	}
 
 }
+
+class MultiLineHeaderRenderer extends JList implements TableCellRenderer {
+	public MultiLineHeaderRenderer() {
+		setOpaque(true);
+		setForeground(UIManager.getColor("TableHeader.foreground"));
+		setBackground(UIManager.getColor("TableHeader.background"));
+		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+		ListCellRenderer renderer = getCellRenderer();
+		((JLabel) renderer).setHorizontalAlignment(JLabel.CENTER);
+		setCellRenderer(renderer);
+		}
+
+		public Component getTableCellRendererComponent(JTable table, Object value,
+			boolean isSelected, boolean hasFocus, int row, int column) {
+		Font font = new Font(table.getFont().getName(), table.getFont().getStyle(), 10);
+	    setFont(font);
+	    String str = (value == null) ? "" : value.toString();
+	    BufferedReader br = new BufferedReader(new StringReader(str));
+	    String line;
+	    Vector v = new Vector();
+	    try {
+	      while ((line = br.readLine()) != null) {
+	        v.addElement(line);
+	      }
+	    } catch (IOException ex) {
+	      ex.printStackTrace();
+	    }
+	    setListData(v);
+	    return this;
+	  }
+	}
+

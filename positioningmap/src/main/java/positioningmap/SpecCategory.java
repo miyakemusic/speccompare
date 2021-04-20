@@ -62,63 +62,38 @@ public class SpecCategory {
 
 		@Override
 		public void name(SpecDef specDef, String name) {
-			for (Map.Entry<String, SpecDef> entry : specs.entrySet()) {
-				if (entry.getValue().equals(specDef)) {
-					if (!entry.getKey().equals(name)) {
-						specs.remove(entry.getKey());
-						specDef.setSpecInterface(specDefInterface);
-						specs.put(name, specDef);
+			new MapCopier<String, SpecDef>(specs) {
+				@Override
+				protected void handle(String key, SpecDef value, Map<String, SpecDef> newMap) {
+					if (value.equals(specDef)) {
+						newMap.put(name, specDef);
 					}
-					return;
+					else {
+						newMap.put(key, value);
+					}
 				}
-			}	
+			};
+			
+//			for (Map.Entry<String, SpecDef> entry : specs.entrySet()) {
+//				if (entry.getValue().equals(specDef)) {
+//					if (!entry.getKey().equals(name)) {
+//						specs.remove(entry.getKey());
+//						specDef.setSpecInterface(specDefInterface);
+//						specs.put(name, specDef);
+//					}
+//					return;
+//				}
+//			}
 		}
 
 		@Override
 		public void moveUp(SpecDef specDef) {	
 			new MapMover<String, SpecDef>(specs).moveUp(specDef);
-//			if (new ArrayList<SpecDef>(specs.values()).indexOf(specDef) == 0) {
-//				return;
-//			}
-//			Map<String, SpecDef> tmp = new LinkedHashMap<>();
-//			String lastKey = "";
-//			for (Map.Entry<String, SpecDef> entry : specs.entrySet()) {
-//				if (entry.getValue().equals(specDef)) {
-//					SpecDef lastValue = tmp.get(lastKey);
-//					tmp.remove(lastKey);
-//					tmp.put(entry.getKey(), entry.getValue());
-//					tmp.put(lastKey, lastValue);
-//				}
-//				else {
-//					tmp.put(entry.getKey(), entry.getValue());
-//				}
-//				lastKey = entry.getKey();
-//			}
-//			specs.clear();
-//			specs.putAll(tmp);
 		}
 
 		@Override
 		public void moveDown(SpecDef specDef) {
 			new MapMover<String, SpecDef>(specs).moveDown(specDef);
-//			if (new ArrayList<SpecDef>(specs.values()).indexOf(specDef) == specs.size()-1) {
-//				return;
-//			}
-//			Map<String, SpecDef> tmp = new LinkedHashMap<>();
-//			String key = "";
-//			for (Map.Entry<String, SpecDef> entry : specs.entrySet()) {
-//				if (entry.getValue().equals(specDef)) {
-//					key = entry.getKey();
-//					continue;
-//				}
-//				tmp.put(entry.getKey(), entry.getValue());	
-//				if (!key.isBlank())  {
-//					tmp.put(key, specs.get(key));
-//					key = "";
-//				}
-//			}
-//			specs.clear();
-//			specs.putAll(tmp);
 		}
 	};
 	

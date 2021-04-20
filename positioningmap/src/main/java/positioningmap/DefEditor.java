@@ -4,8 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.util.List;
+import java.util.Map;
+
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class DefEditor extends JDialog {
@@ -13,11 +17,11 @@ public class DefEditor extends JDialog {
 	private InputContainer inputs = null;
 	private ControlBar contorlBar;
 	
-	public DefEditor(JFrame parent, SpecDef specDef, List<String> categories, List<String> units) {
+	public DefEditor(JFrame parent, SpecDef specDef, List<String> categories, List<String> units, Map<String, String> parents) {
 		super(parent);
 		
 		this.setLocationRelativeTo(null);
-		this.setSize(new Dimension(400, 300));
+		this.setSize(new Dimension(400, 350));
 		this.getContentPane().setLayout(new BorderLayout());
 		
 		inputs = new InputContainer(specDef);;
@@ -29,17 +33,32 @@ public class DefEditor extends JDialog {
 		panel.add(inputs.createEditableCombo("category", categories));
 		panel.add(inputs.createWidget("name"));
 		panel.add(inputs.createEditableCombo("unit", units));
-		
-//		JComboBox<String> comboSpecType = new JComboBox<>();
-//		Arrays.asList(SpecTypeEnum.values()).forEach(v -> comboSpecType.addItem(v.toString()));
-//		panel.add(comboSpecType);
 		panel.add(inputs.createWidget("specType"));
 		
-
+//		panel.add(inputs.createEditableCombo("parentId", parents));
+		JPanel p = new JPanel();
+		p.setLayout(new FlowLayout());
+		p.add(new JLabel("Parent"));
+		JComboBox<String> parentCombo = new JComboBox<>();
+		p.add(parentCombo);
+		panel.add(parentCombo);
+		parentCombo.addItem("");
+		parents.keySet().forEach(k -> {
+			parentCombo.addItem(k);
+		});
+		
+		parents.forEach((k,v) -> {
+			if (v.equals(specDef.getParentId())) {
+				parentCombo.setSelectedItem(k);
+				return;
+			}
+		});
+		
 		this.getContentPane().add(contorlBar = new ControlBar() {
 			@Override
 			void onOk() {
 				inputs.commit();
+				specDef.setParentId(parents.get(parentCombo.getSelectedItem().toString()));
 				DefEditor.this.setVisible(false);
 			}
 
@@ -48,6 +67,7 @@ public class DefEditor extends JDialog {
 				DefEditor.this.setVisible(false);
 			}
 		}, BorderLayout.SOUTH);
+
 	}
 
 	public boolean ok() {

@@ -114,7 +114,14 @@ public class SpecValue implements Cloneable {
 	@Override
 	public SpecValue clone() {
 		try {
-			return (SpecValue)super.clone();
+			SpecValue ret = (SpecValue)super.clone();
+			ret.available = new Boolean(available);
+			ret.defined = new Boolean(defined);
+			ret.string = new String(this.string);
+			ret.x = new Double(this.x);
+			ret.y = new Double(this.y);
+			
+			return ret;
 		} catch (CloneNotSupportedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

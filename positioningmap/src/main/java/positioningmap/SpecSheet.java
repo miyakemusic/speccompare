@@ -175,14 +175,31 @@ public class SpecSheet {
 	}
 
 	public void changeProductName(String oldName, String newName) {
-		ProductSpec spec = this.productSpecs.get(oldName);
-		this.productSpecs.remove(oldName);
-		this.productSpecs.put(newName, spec);
+		new MapCopier<String, ProductSpec>(this.productSpecs) {
+			@Override
+			protected void handle(String key, ProductSpec value, Map<String, ProductSpec> newMap) {
+				if (key.equals(oldName)) {
+					newMap.put(newName, value);
+				}
+				else {
+					newMap.put(key, value);
+				}	
+			}
+		};
 	}
 
-	public void copyProduct(String name) {
-		ProductSpec spec = this.productSpecs.get(name);
-		this.productSpecs.put("Copy of " + name, spec.clone());
+	public void copyProduct(String name) {		
+		new MapCopier<String, ProductSpec>(this.productSpecs) {
+			@Override
+			protected void handle(String key, ProductSpec value, Map<String, ProductSpec> newMap) {
+				newMap.put(key, value);
+				if (key.equals(name)) {
+					String[] tmp = key.split("\n");
+					String newName = tmp[0] + "\nCopy of " + tmp[1];
+					newMap.put(newName, value.clone());	
+				}
+			}
+		};
 	}
 
 	public void moveLeft(String name) {
@@ -198,8 +215,23 @@ public class SpecSheet {
 		ProductSpec from = this.productSpecs.get(fromColumn);
 		ProductSpec to = this.productSpecs.get(toColumn);
 		for (String id : fromRows) {
-			to.getValues().put(id, from.getValues().get(id).clone());
+			SpecHolder sh = from.getValues().get(id);
+			if (sh != null) {
+				to.getValues().put(id, sh.clone());
+			}
 		}
+	}
+
+	public Map<String, String> allIds() {
+		Map<String, String> ret = new LinkedHashMap<>();
+		this.categories.forEach((k,v) -> {
+			v.getSpecs().forEach((kk, vv) -> {
+				if (vv.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
+					ret.put("[" + k + "]" + kk, vv.getId());
+				}
+			});
+		});
+		return ret;
 	}
 
 }
