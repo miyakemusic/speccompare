@@ -102,6 +102,23 @@ public class Main {
 				return specOtdr.allIds();
 			}
 
+			@Override
+			public boolean isEnabled(int row, String product) {
+				String id = list.get(row).get(0);
+//				System.out.println(product + ";" + id);
+				SpecDef specDef = specOtdr.find(id);
+				if (specDef.getParentId() != null && !specDef.getParentId().isBlank()) {
+					SpecHolder value = specOtdr.getValue(specDef.getParentId(), product);
+					if (value.getGuarantee().getAvailable()) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				}
+				return true;
+			}
+
 		};
 		
 		new TableFrame(model, tableFrameInterface) {
@@ -212,6 +229,12 @@ public class Main {
 				}
 				specOtdr.copyCells(ids, fromColumn, toColumn);
 				updateModel(specOtdr, model, false);
+			}
+
+			@Override
+			void delete(int row) {
+				specOtdr.delete(list.get(row).get(1), list.get(row).get(0));
+				updateModel(specOtdr, model, true);
 			}
 		}.setVisible(true);
 	}

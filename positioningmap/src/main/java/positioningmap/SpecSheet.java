@@ -137,7 +137,7 @@ public class SpecSheet {
 		return find(id);
 	}
 
-	private SpecDef find(String id) {
+	public SpecDef find(String id) {
 		for (SpecCategory sc : categories.values()) {
 			for (SpecDef spec : sc.getSpecs().values()) {
 				if (spec.id().equals(id)) {
@@ -232,6 +232,10 @@ public class SpecSheet {
 			});
 		});
 		return ret;
+	}
+
+	public void delete(String category, String id) {
+	
 	}
 
 }
