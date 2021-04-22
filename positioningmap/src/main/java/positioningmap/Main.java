@@ -236,6 +236,11 @@ public class Main {
 				specOtdr.delete(list.get(row).get(1), list.get(row).get(0));
 				updateModel(specOtdr, model, true);
 			}
+
+			@Override
+			void onPositioningMap() {
+				new PositioningMapUi(new PositioningMapModel(specOtdr)).setVisible(true);
+			}
 		}.setVisible(true);
 	}
 

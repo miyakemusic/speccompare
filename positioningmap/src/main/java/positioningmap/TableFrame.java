@@ -86,6 +86,7 @@ public abstract class TableFrame extends JFrame {
 	abstract void moveRight(String name);
 	abstract void copyCells(int[] fromRows, String fromColumn, String toColumn);
 	abstract void delete(int row);
+	abstract void onPositioningMap();
 	
 	private JTable table = null;
 	protected String selecteHeaderName;
@@ -93,6 +94,7 @@ public abstract class TableFrame extends JFrame {
 	private int[] copiedRows;
 	private TableFrameInterface tableFrameInterface;
 	protected int currentRow = 0;
+	protected int currentColumn = 0;
 	
 	public TableFrame(AbstractTableModel model, TableFrameInterface tableFrameInterface) {
 		this.tableFrameInterface = tableFrameInterface;
@@ -139,9 +141,12 @@ public abstract class TableFrame extends JFrame {
 		upButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				currentRow = table.getSelectedRow();
-				moveUp(currentRow, table.getSelectedColumn());
+//				currentRow = table.getSelectedRow();
+				moveUp(currentRow, currentColumn);
 				currentRow--;
+				if (currentRow < 0) {
+					currentRow = 0;
+				}
 			}
 		});
 		
@@ -150,9 +155,21 @@ public abstract class TableFrame extends JFrame {
 		downButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				currentRow = table.getSelectedRow();
-				moveDown(currentRow, table.getSelectedColumn());
+//				currentRow = table.getSelectedRow();
+				moveDown(currentRow, currentColumn);
 				currentRow++;
+				if (currentRow >= table.getRowCount()) {
+					currentRow = table.getRowCount() - 1;
+				}
+			}
+		});
+		
+		JButton positioningMap = new JButton("Positioning Map");
+		panel.add(positioningMap);
+		positioningMap.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onPositioningMap();
 			}
 		});
 		
@@ -192,7 +209,7 @@ public abstract class TableFrame extends JFrame {
 							}
 						}
 						//table.setRowSelectionAllowed(true);
-						table.setRowSelectionInterval(currentRow, currentRow);
+						//table.setRowSelectionInterval(currentRow, currentRow);
 					}
 				});
 
@@ -211,13 +228,13 @@ public abstract class TableFrame extends JFrame {
 		popup.add(createMenuItem("Move Up", new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				moveUp(table.getSelectedRow(), table.getSelectedColumn());
+				moveUp(currentRow, currentColumn);
 			}
 		}));
 		popup.add(createMenuItem("Move Down", new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				moveDown(table.getSelectedRow(), table.getSelectedColumn());
+				moveDown(currentRow, currentColumn);
 			}
 		}));
 		
@@ -234,6 +251,8 @@ public abstract class TableFrame extends JFrame {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				currentRow = table.getSelectedRow();
+				currentColumn = table.getSelectedColumn();
+				
 				if (e.getButton() == MouseEvent.BUTTON3) {
 					
 					popup.show(table, e.getX(), e.getY());
