@@ -12,7 +12,7 @@ public class SpecDef {
 
 	private SpecTypeEnum specType;
 	private String unit;
-	private Better better;
+	private Better better = Better.None;
 	private List<String> choices = new ArrayList<>();
 	private String id;
 	private String parentId = "";
@@ -52,8 +52,13 @@ public class SpecDef {
 	public Better getBetter() {
 		return better;
 	}
-	public void setBetter(Better better) {
-		this.better = better;
+	public void setBetter(String better) {
+		if (better == null) {
+			this.better = Better.None;
+		}
+		else {
+			this.better = Better.valueOf(better);
+		}
 	}
 	public List<String> getChoices() {
 		return choices;

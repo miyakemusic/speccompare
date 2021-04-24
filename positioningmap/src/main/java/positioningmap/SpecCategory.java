@@ -1,10 +1,6 @@
 package positioningmap;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,6 +16,7 @@ public class SpecCategory {
 	public SpecDef createSpec(String subSpec, SpecTypeEnum specType, String unit, Better better) {
 		SpecDef spec = new SpecDef(specType, unit, better);
 		this.specs.put(subSpec, spec);
+		spec.setSpecInterface(specDefInterface);
 		return spec;
 	}
 	public Map<String, SpecDef> getSpecs() {
@@ -73,17 +70,6 @@ public class SpecCategory {
 					}
 				}
 			};
-			
-//			for (Map.Entry<String, SpecDef> entry : specs.entrySet()) {
-//				if (entry.getValue().equals(specDef)) {
-//					if (!entry.getKey().equals(name)) {
-//						specs.remove(entry.getKey());
-//						specDef.setSpecInterface(specDefInterface);
-//						specs.put(name, specDef);
-//					}
-//					return;
-//				}
-//			}
 		}
 
 		@Override

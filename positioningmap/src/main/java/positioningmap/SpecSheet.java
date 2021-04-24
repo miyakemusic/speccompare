@@ -25,7 +25,8 @@ public class SpecSheet {
 	}
 
 	public SpecDef addSpec(String specCategory, String specName, SpecTypeEnum specType, String unit, Better better) {
-		return getCategory(specCategory).createSpec(specName, specType, unit, better);
+		SpecDef ret = getCategory(specCategory).createSpec(specName, specType, unit, better);
+		return ret;
 	}
 
 
@@ -195,8 +196,15 @@ public class SpecSheet {
 				newMap.put(key, value);
 				if (key.equals(name)) {
 					String[] tmp = key.split("\n");
-					String newName = tmp[0] + "\nCopy of " + tmp[1];
-					newMap.put(newName, value.clone());	
+					String newName = tmp[0];
+					if (tmp.length > 1) {
+						newName += "\n" + tmp[1];
+					}
+					if (tmp.length > 2) {
+						newName += "\n" + tmp[2];
+					}
+
+					newMap.put(newName + "_copied", value.clone());	
 				}
 			}
 		};
@@ -235,7 +243,34 @@ public class SpecSheet {
 	}
 
 	public void delete(String category, String id) {
-	
+		for (Map.Entry<String, SpecDef> entry : categories.get(category).getSpecs().entrySet()) {
+			if (entry.getValue().getId().equals(id)) {
+				categories.get(category).getSpecs().remove(entry.getKey());
+				return;
+			}
+		}
+	}
+
+	public void copySpec(String category, String id) {
+//		new MapCopier<String, SpecDef>(this.categories.get(category).getSpecs()) {
+//
+//			@Override
+//			protected void handle(String key, SpecDef value, Map<String, SpecDef> newMap) {
+//				newMap.put(key, value);
+//				if (key.equals(spec)) {
+//					
+//				}
+//			}
+//
+//		};
+		for (Map.Entry<String, SpecDef> entry : categories.get(category).getSpecs().entrySet()) {
+			if (entry.getValue().getId().equals(id)) {
+				SpecDef specDef = entry.getValue();
+				this.addSpec(category, "Copy of "+ specDef.getName(), specDef.getSpecType(), specDef.getUnit(), specDef.getBetter());
+				return;
+			}
+		}
+
 	}
 
 }

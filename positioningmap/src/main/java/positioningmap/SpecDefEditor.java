@@ -12,12 +12,12 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class DefEditor extends JDialog {
+public class SpecDefEditor extends JDialog {
 
 	private InputContainer inputs = null;
 	private ControlBar contorlBar;
 	
-	public DefEditor(JFrame parent, SpecDef specDef, List<String> categories, List<String> units, Map<String, String> parents) {
+	public SpecDefEditor(JFrame parent, SpecDef specDef, List<String> categories, List<String> units, Map<String, String> parents) {
 		super(parent);
 		
 		this.setLocationRelativeTo(null);
@@ -34,6 +34,7 @@ public class DefEditor extends JDialog {
 		panel.add(inputs.createWidget("name"));
 		panel.add(inputs.createEditableCombo("unit", units));
 		panel.add(inputs.createWidget("specType"));
+		panel.add(inputs.createWidget("better"));
 		
 //		panel.add(inputs.createEditableCombo("parentId", parents));
 		JPanel p = new JPanel();
@@ -59,12 +60,12 @@ public class DefEditor extends JDialog {
 			void onOk() {
 				inputs.commit();
 				specDef.setParentId(parents.get(parentCombo.getSelectedItem().toString()));
-				DefEditor.this.setVisible(false);
+				SpecDefEditor.this.setVisible(false);
 			}
 
 			@Override
 			void onCancel() {
-				DefEditor.this.setVisible(false);
+				SpecDefEditor.this.setVisible(false);
 			}
 		}, BorderLayout.SOUTH);
 

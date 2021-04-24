@@ -86,6 +86,7 @@ public abstract class TableFrame extends JFrame {
 	abstract void moveRight(String name);
 	abstract void copyCells(int[] fromRows, String fromColumn, String toColumn);
 	abstract void delete(int row);
+	abstract void copySpec(int row);
 	abstract void onPositioningMap();
 	
 	private JTable table = null;
@@ -244,6 +245,12 @@ public abstract class TableFrame extends JFrame {
 				delete(table.getSelectedRow());
 			}
 		}));
+		popup.add(createMenuItem("Copy", new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				copySpec(table.getSelectedRow());
+			}
+		}));
 		
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setCellSelectionEnabled(true);
@@ -346,8 +353,14 @@ public abstract class TableFrame extends JFrame {
 				ProductKey key = new ProductKey();
 				if (selecteHeaderName.contains("\n")) {
 					String[] tmp = 	selecteHeaderName.split("\n");
-					key.setProductName(tmp[1]);
+
 					key.setVendorName(tmp[0]);
+					if (tmp.length > 1) {
+						key.setFamilyName(tmp[1]);
+					}
+					if (tmp.length > 2) {
+						key.setProductName(tmp[2]);
+					}
 				}
 				else {
 					key.setVendorName("");
@@ -357,7 +370,7 @@ public abstract class TableFrame extends JFrame {
 
 					@Override
 					void onOk() {
-						rename(selecteHeaderName, key.getVendorName() + "\n" + key.getProductName());
+						rename(selecteHeaderName, key.getVendorName() + "\n" + key.getFamilyName() + "\n" + key.getProductName());
 					}
 					
 				}.setVisible(true);
@@ -405,7 +418,7 @@ public abstract class TableFrame extends JFrame {
 
 	}
 	private void showDefEditor(SpecDef spedDef, TableFrameInterface tableFrameInterface) {
-		DefEditor dialog = new DefEditor(this, spedDef, 
+		SpecDefEditor dialog = new SpecDefEditor(this, spedDef, 
 				tableFrameInterface.categories(), 
 				tableFrameInterface.units(),
 				tableFrameInterface.parents());

@@ -50,6 +50,9 @@ public class SpecValue implements Cloneable {
 		else if (!this.string.isEmpty()) {
 			ret = this.string;
 		}
+		else {
+			ret = "No";
+		}
 		return ret;
 	}
 

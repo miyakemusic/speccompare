@@ -30,7 +30,7 @@ public class ValueEditor extends JDialog {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private Map<SpecKey, JComponent> inputs = new HashMap<>();
+	private Map<LocalSpecKey, JComponent> inputs = new HashMap<>();
 	private boolean ok = false;
 	
 	public ValueEditor(JFrame parent, String model, SpecDef specDef, SpecHolder specHolder) {
@@ -75,7 +75,7 @@ public class ValueEditor extends JDialog {
 		okButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				for (SpecKey key : inputs.keySet()) {
+				for (LocalSpecKey key : inputs.keySet()) {
 					String value = "";
 					JComponent component = inputs.get(key);
 					if (component instanceof JTextField) {
@@ -151,13 +151,13 @@ public class ValueEditor extends JDialog {
 			combo.setSelectedItem(specValue.getString());
 			panel.add(combo);
 			
-			inputs.put(new SpecKey(specValue, "String"), combo);
+			inputs.put(new LocalSpecKey(specValue, "String"), combo);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
 			panel.setPreferredSize(new Dimension(200, 80));
 			JCheckBox check = new JCheckBox();
 			check.setSelected(specValue.getAvailable());
-			inputs.put(new SpecKey(specValue, "Available"), check);
+			inputs.put(new LocalSpecKey(specValue, "Available"), check);
 			panel.add(check);
 		}
 	}
@@ -179,7 +179,7 @@ public class ValueEditor extends JDialog {
 			
 		}
 		JTextField text = new JTextField(v);
-		inputs.put(new SpecKey(specValue, field), text);
+		inputs.put(new LocalSpecKey(specValue, field), text);
 		text.setPreferredSize(new Dimension(100, 20));
 		return text;
 	}
@@ -188,8 +188,8 @@ public class ValueEditor extends JDialog {
 		return ok;
 	}
 }
-class SpecKey { 
-	public SpecKey(SpecValue spec, String field) {
+class LocalSpecKey { 
+	public LocalSpecKey(SpecValue spec, String field) {
 		this.spec = spec;
 		this.field = field;
 	}

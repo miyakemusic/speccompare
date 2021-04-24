@@ -40,8 +40,12 @@ public class InputContainer {
 				panel.setLayout(new FlowLayout());
 				
 				Method method = object.getClass().getMethod("get" + capital);
-				String v;
-				v = method.invoke(object).toString();
+				
+				Object ret = method.invoke(object);
+				String v= "";
+				if (ret != null) {
+					v = ret.toString();
+				}
 				JComponent component = createWidget(v);
 				panel.add(component);
 				addToMap("set" + capital, component);

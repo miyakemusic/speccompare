@@ -122,7 +122,6 @@ public class Main {
 		};
 		
 		new TableFrame(model, tableFrameInterface) {
-
 			@Override
 			void save() {
 				saveToFile(specOtdr);
@@ -240,6 +239,13 @@ public class Main {
 			@Override
 			void onPositioningMap() {
 				new PositioningMapUi(new PositioningMapModel(specOtdr)).setVisible(true);
+			}
+
+			@Override
+			void copySpec(int row) {
+				String id = list.get(row).get(0).toString();
+				specOtdr.copySpec(list.get(row).get(1), list.get(row).get(0));
+				updateModel(specOtdr, model, true);
 			}
 		}.setVisible(true);
 	}
