@@ -3,6 +3,8 @@ package positioningmap;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +35,10 @@ public class PositioningMapModel {
 	
 	public PositioningMapModel(SpecSheet specSheet) {
 		this.specSheet = specSheet;
-		
+	}
+	
+	private NumberFormat formatter = new DecimalFormat("#0.00"); 
+	private void createData() {
 		specSheet.getCategories().forEach((k,v) -> {
 			v.getSpecs().forEach((kk, vv) -> {
 				xAxisCategory = k;
@@ -43,9 +48,7 @@ public class PositioningMapModel {
 				return;
 			});
 		});
-	}
-	private NumberFormat formatter = new DecimalFormat("#0.00"); 
-	private void createData() {
+		
 		xlabels.clear();
 		ylabels.clear();
 		elements.clear();
@@ -55,6 +58,44 @@ public class PositioningMapModel {
 		
 		SpecDef specDefX = specSheet.getCategories().get(xAxisCategory).getSpecs().get(xAxisSpec);
 		SpecDef specDefY = specSheet.getCategories().get(yAxisCategory).getSpecs().get(yAxisSpec);
+		
+		
+		List<String> target = Arrays.asList("Dynamic Range@1310nm", "Dynamic Range@1550nm", "1310nm accuracy", "1550nm accuracy");
+//		ScoreCalculatorInterface scoreCalculatorInterface = new ScoreCalculatorInterface() {
+//			@Override
+//			public List<String> specNames() {
+//				return target;
+//			}
+//
+//			@Override
+//			public SpecDef specDef(String specName) {
+//				return specSheet.getSpecs("OTDR").get(specName);
+//			}
+//
+//			@Override
+//			public List<SpecHolder> allProductSpec(String id) {
+//				List<SpecHolder> ret = new ArrayList<>();
+//				specSheet.getProductSpecs().forEach((productName, productSpec) -> {
+//					SpecHolder specHolder = productSpec.getValues().get(id);
+//					if (specHolder != null) {
+//						ret.add(specHolder);
+//					}
+//				});
+//				return ret;
+//			}
+//
+//			@Override
+//			public List<String> productNames() {
+//				return new ArrayList<String>(specSheet.getProductSpecs().keySet());
+//			}
+//
+//			@Override
+//			public SpecHolder getSpec(String productName, String id) {
+//				return specSheet.getProductSpecs().get(productName).getValues().get(id);
+//			}
+//
+//		};
+		ScoreCalculator calc = new ScoreCalculator(specSheet, target);
 		
 		double xmaxMax = Double.NEGATIVE_INFINITY;
 		double xminMin = Double.POSITIVE_INFINITY;
@@ -68,65 +109,26 @@ public class PositioningMapModel {
 			Map<String, SpecHolder> values = specSheet.getProductSpecs().get(product).getValues();
 			
 			SpecHolder specX = values.get(specDefX.getId());
+			SpecValue specValueX = getValue(specX);
+			double xmin = specValueX.getX();
+			double xmax = specValueX.getY();
+			xmaxMax = Math.max(Math.max(xmax, xmaxMax), xmin);
+			xminMin = Math.min(Math.min(xmin, xminMin), xmax);	
+			
 			SpecHolder specY = values.get(specDefY.getId());
 			if ((specX == null) || (specY == null)) {
 				continue;
 			}
-			SpecValue specValueX = getValue(specX);//.getGuarantee();
 
-			double xmin = specValueX.getX();
-			double xmax = specValueX.getY();
-			xmaxMax = Math.max(Math.max(xmax, xmaxMax), xmin);
-			xminMin = Math.min(Math.min(xmin, xminMin), xmax);			
+			CalcResult result = calc.calc(product);
 			
-			
-			SpecValue specValueY = getValue(specY);//.getGuarantee();
-			double ymin = 0.0;// = specValueY.getX();
-			double ymax = 0.0;// = specValueY.getY();
-			
-			if (specDefY.getSpecType().compareTo(SpecTypeEnum.Range) == 0) {
-				if (specDefY.getBetter().compareTo(Better.Narrower) == 0) {
-					double width = specValueY.getY() - specValueY.getX();
-					ymin = ymax = width;
-				}
-				else if (specDefY.getBetter().compareTo(Better.Wider) == 0) {
-					double width = specValueY.getY() - specValueY.getX();
-					ymin = ymax = width;				
-				}
-				else if (specDefY.getBetter().compareTo(Better.Higher) == 0) {
-					ymin = specValueY.getX();
-					ymax = specValueY.getY();
-				}
-				else if (specDefY.getBetter().compareTo(Better.Lower) == 0) {
-					ymin = specValueY.getX();
-					ymax = specValueY.getY();					
-				}
-				else if (specDefY.getBetter().compareTo(Better.None) == 0) {
-					
-				}
-			}
-			else if (specDefY.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) {
-				if (specDefY.getBetter().compareTo(Better.Narrower) == 0) {
-					System.out.println("Invalid Condition");
-				}
-				else if (specDefY.getBetter().compareTo(Better.Wider) == 0) {
-					System.out.println("Invalid Condition");
-				}
-				else if (specDefY.getBetter().compareTo(Better.Higher) == 0) {
-					ymin = ymax = specValueY.getX();
-				}
-				else if (specDefY.getBetter().compareTo(Better.Lower) == 0) {
-					ymin = ymax = specValueY.getX();
-				}
-				else if (specDefY.getBetter().compareTo(Better.None) == 0) {
-					ymin = ymax = specValueY.getX();
-				}				
-			}
-			
-			if (specValueY.getDefined() == false || specValueX.getDefined() == false) {
-				break;
-			}		
+			SpecValue specValueY = getValue(specY);
+			double ymin = 0.0;
+			double ymax = 0.0;
 
+			ymin = result.min;
+			ymax = result.max;
+			
 			ymaxMax = Math.max(Math.max(ymax, ymaxMax), ymin);
 			yminMin = Math.min(Math.min(ymin, yminMin), ymax);
 			
