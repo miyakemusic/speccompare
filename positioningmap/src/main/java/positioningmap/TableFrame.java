@@ -88,6 +88,7 @@ public abstract class TableFrame extends JFrame {
 	abstract void delete(int row);
 	abstract void copySpec(int row);
 	abstract void onPositioningMap();
+	abstract void onConifgPositioningMap();
 	
 	private JTable table = null;
 	protected String selecteHeaderName;
@@ -171,6 +172,15 @@ public abstract class TableFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				onPositioningMap();
+			}
+		});
+		
+		JButton configPositionMap = new JButton("Config Positioning Map");
+		panel.add(configPositionMap);
+		configPositionMap.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onConifgPositioningMap();
 			}
 		});
 		

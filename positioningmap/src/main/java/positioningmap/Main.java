@@ -1,11 +1,16 @@
 package positioningmap;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +53,7 @@ public class Main {
 	
 	private List<List<String>> list = new ArrayList<>();
 	private List<String> title = new ArrayList<>();
-	private SpecSheet specOtdr = new SpecSheet("OTDR");
+	private SpecSheet specSheet = new SpecSheet("OTDR");
 	public Main() {
 		
 //		createDemo();
@@ -78,36 +83,35 @@ public class Main {
 			
 		};
 		
-		updateModel(specOtdr, model, false);
+		updateModel(specSheet, model, false);
 		
 		TableFrameInterface tableFrameInterface = new TableFrameInterface() {
 			@Override
 			public List<String> categories() {
-				return new ArrayList<String>(specOtdr.categories());
+				return new ArrayList<String>(specSheet.categories());
 			}
 
 			@Override
 			public List<String> units() {
-				return specOtdr.units();
+				return specSheet.units();
 			}
 
 			@Override
 			public SpecDef createSpecDef() {
-				return specOtdr.newSpec();
+				return specSheet.newSpec();
 			}
 
 			@Override
 			public Map<String, String> parents() {
-				return specOtdr.allIds();
+				return specSheet.allIds();
 			}
 
 			@Override
 			public boolean isEnabled(int row, String product) {
 				String id = list.get(row).get(0);
-//				System.out.println(product + ";" + id);
-				SpecDef specDef = specOtdr.find(id);
+				SpecDef specDef = specSheet.find(id);
 				if (specDef.getParentId() != null && !specDef.getParentId().isBlank()) {
-					SpecHolder value = specOtdr.getValue(specDef.getParentId(), product);
+					SpecHolder value = specSheet.getValue(specDef.getParentId(), product);
 					if (value.getGuarantee().getAvailable()) {
 						return true;
 					}
@@ -117,19 +121,18 @@ public class Main {
 				}
 				return true;
 			}
-
 		};
 		
 		new TableFrame(model, tableFrameInterface) {
 			@Override
 			void save() {
-				saveToFile(specOtdr);
+				saveToFile(specSheet);
 			}
 
 			@Override
 			void newProduct(String value) {
-				specOtdr.addProduct("EXFO", value);
-				updateModel(specOtdr, model, true);
+				specSheet.addProduct("EXFO", value);
+				updateModel(specSheet, model, true);
 			}
 
 			@Override
@@ -146,7 +149,7 @@ public class Main {
 
 			private SpecDef specDefByRow(int row) {
 				String id = list.get(row).get(0).toString();
-				SpecDef specDef = specOtdr.specDef(id);
+				SpecDef specDef = specSheet.specDef(id);
 				return specDef;
 			}
 			
@@ -154,7 +157,7 @@ public class Main {
 			SpecHolder getSpecValue(int row, int col) {
 				String id = list.get(row).get(0).toString();
 				String model = title.get(col).toString();
-				SpecHolder spec = specOtdr.getValue(id, model);
+				SpecHolder spec = specSheet.getValue(id, model);
 				return spec;
 			}
 
@@ -166,7 +169,7 @@ public class Main {
 
 			@Override
 			void onUpdate() {
-				updateModel(specOtdr, model, true);
+				updateModel(specSheet, model, true);
 			}
 
 			@Override
@@ -177,9 +180,9 @@ public class Main {
 				}
 				else if (col == CATEGORY_COL) {
 					String category = list.get(row).get(1);
-					specOtdr.moveUp(category);
+					specSheet.moveUp(category);
 				}
-				updateModel(specOtdr, model, false);
+				updateModel(specSheet, model, false);
 			}
 
 			@Override
@@ -190,33 +193,33 @@ public class Main {
 				}
 				else if (col == CATEGORY_COL) {
 					String category = list.get(row).get(1);
-					specOtdr.moveDown(category);	
+					specSheet.moveDown(category);	
 				}
-				updateModel(specOtdr, model, false);
+				updateModel(specSheet, model, false);
 			}
 
 			@Override
 			void rename(String oldName, String newName) {
-				specOtdr.changeProductName(oldName, newName);
-				updateModel(specOtdr, model, true);
+				specSheet.changeProductName(oldName, newName);
+				updateModel(specSheet, model, true);
 			}
 
 			@Override
 			void copyProduct(String name) {
-				specOtdr.copyProduct(name);
-				updateModel(specOtdr, model, true);
+				specSheet.copyProduct(name);
+				updateModel(specSheet, model, true);
 			}
 
 			@Override
 			void moveLeft(String name) {
-				specOtdr.moveLeft(name);
-				updateModel(specOtdr, model, true);
+				specSheet.moveLeft(name);
+				updateModel(specSheet, model, true);
 			}
 
 			@Override
 			void moveRight(String name) {
-				specOtdr.moveRight(name);
-				updateModel(specOtdr, model, true);
+				specSheet.moveRight(name);
+				updateModel(specSheet, model, true);
 			}
 
 			@Override
@@ -225,34 +228,43 @@ public class Main {
 				for (int row : fromRows) {
 					ids.add(list.get(row).get(0));
 				}
-				specOtdr.copyCells(ids, fromColumn, toColumn);
-				updateModel(specOtdr, model, false);
+				specSheet.copyCells(ids, fromColumn, toColumn);
+				updateModel(specSheet, model, false);
 			}
 
 			@Override
 			void delete(int row) {
-				specOtdr.delete(list.get(row).get(1), list.get(row).get(0));
-				updateModel(specOtdr, model, true);
+				specSheet.delete(list.get(row).get(1), list.get(row).get(0));
+				updateModel(specSheet, model, true);
 			}
 
 			@Override
 			void onPositioningMap() {
-				new PositioningMapUi(new PositioningMapModel(specOtdr)).setVisible(true);
+				new PositioningMapUi(new PositioningMapModel(specSheet)).setVisible(true);
 			}
 
 			@Override
 			void copySpec(int row) {
 				String id = list.get(row).get(0).toString();
-				specOtdr.copySpec(list.get(row).get(1), list.get(row).get(0));
-				updateModel(specOtdr, model, true);
+				specSheet.copySpec(list.get(row).get(1), list.get(row).get(0));
+				updateModel(specSheet, model, true);
+			}
+
+			@Override
+			void onConifgPositioningMap() {
+				JFrame frame = new JFrame();
+				frame.setSize(new Dimension(1000, 800));
+				frame.getContentPane().setLayout(new BorderLayout());
+				frame.getContentPane().add(new JScrollPane(new JTable(new PMConfigModel(specSheet))), BorderLayout.CENTER);
+				frame.setVisible(true);
 			}
 		}.setVisible(true);
 	}
 
 	private void loadFile() {
 		try {
-			this.specOtdr = new ObjectMapper().readValue(new File("otdr.spec"), SpecSheet.class);
-			this.specOtdr.init();
+			this.specSheet = new ObjectMapper().readValue(new File("otdr.spec"), SpecSheet.class);
+			this.specSheet.init();
 		} catch (IOException e) {
 
 			e.printStackTrace();
@@ -260,60 +272,60 @@ public class Main {
 	}
 
 	private void createDemo() {
-		String displayDevice = specOtdr.addSpec("Display", "Device", SpecTypeEnum.Choice).choice("LCD").choice("OLED").id();
-		String resolutionId = specOtdr.addSpec("Display", "Resolution", SpecTypeEnum.TwoDmensionalSize, "pixels", Better.Higher).id();
-		String lcdSize = specOtdr.addSpec("Display", "Size", SpecTypeEnum.Numeric, "inch", Better.Higher).id();
+		String displayDevice = specSheet.addSpec("Display", "Device", SpecTypeEnum.Choice).choice("LCD").choice("OLED").id();
+		String resolutionId = specSheet.addSpec("Display", "Resolution", SpecTypeEnum.TwoDmensionalSize, "pixels", Better.Higher).id();
+		String lcdSize = specSheet.addSpec("Display", "Size", SpecTypeEnum.Numeric, "inch", Better.Higher).id();
 	
-		String usb = specOtdr.addSpec("Interface", "USB", SpecTypeEnum.Numeric, "", Better.Higher).id();
-		String eth = specOtdr.addSpec("Interface", "Ethernet", SpecTypeEnum.Numeric, "Mbps", Better.Higher).id();
-		String storageSize = specOtdr.addSpec("Storage", "Size", SpecTypeEnum.Numeric, "GB", Better.Higher).id();
+		String usb = specSheet.addSpec("Interface", "USB", SpecTypeEnum.Numeric, "", Better.Higher).id();
+		String eth = specSheet.addSpec("Interface", "Ethernet", SpecTypeEnum.Numeric, "Mbps", Better.Higher).id();
+		String storageSize = specSheet.addSpec("Storage", "Size", SpecTypeEnum.Numeric, "GB", Better.Higher).id();
 	
-		String batteryType = specOtdr.addSpec("Battery", "type", SpecTypeEnum.Choice).choice("lithium-polymer").choice("lithium-ion").id();
-		String runtime = specOtdr.addSpec("Battery", "Runtime", SpecTypeEnum.Numeric, "Hours", Better.Higher).id();
+		String batteryType = specSheet.addSpec("Battery", "type", SpecTypeEnum.Choice).choice("lithium-polymer").choice("lithium-ion").id();
+		String runtime = specSheet.addSpec("Battery", "Runtime", SpecTypeEnum.Numeric, "Hours", Better.Higher).id();
 	
-		String powerSupply = specOtdr.addSpec("Power Supply", "Input", SpecTypeEnum.Range, "VAC", Better.Wider).id();
-		String powerConsumption = specOtdr.addSpec("Power Supply", "Consumption", SpecTypeEnum.Numeric, "Watts", Better.Lower).id();
+		String powerSupply = specSheet.addSpec("Power Supply", "Input", SpecTypeEnum.Range, "VAC", Better.Wider).id();
+		String powerConsumption = specSheet.addSpec("Power Supply", "Consumption", SpecTypeEnum.Numeric, "Watts", Better.Lower).id();
 
-		String w850 = specOtdr.addSpec("Wavelength", "850nm", SpecTypeEnum.Boolean).id();
-		String w850_accuracy = specOtdr.addSpec("Wavelength", "850nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
+		String w850 = specSheet.addSpec("Wavelength", "850nm", SpecTypeEnum.Boolean).id();
+		String w850_accuracy = specSheet.addSpec("Wavelength", "850nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
 		
-		String w1300 = specOtdr.addSpec("Wavelength", "1300nm", SpecTypeEnum.Boolean).id();
-		String w1300_accuracy = specOtdr.addSpec("Wavelength", "1300nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
+		String w1300 = specSheet.addSpec("Wavelength", "1300nm", SpecTypeEnum.Boolean).id();
+		String w1300_accuracy = specSheet.addSpec("Wavelength", "1300nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
 		
-		String w1490 = specOtdr.addSpec("Wavelength", "1490nm", SpecTypeEnum.Boolean).id();
-		String w1490_accuracy = specOtdr.addSpec("Wavelength", "1490nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
+		String w1490 = specSheet.addSpec("Wavelength", "1490nm", SpecTypeEnum.Boolean).id();
+		String w1490_accuracy = specSheet.addSpec("Wavelength", "1490nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
 		
-		String w1310 = specOtdr.addSpec("Wavelength", "1310nm", SpecTypeEnum.Boolean).id();
-		String w1310_accuracy = specOtdr.addSpec("Wavelength", "1310nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
-
-		
-		String w1550 = specOtdr.addSpec("Wavelength", "1550nm", SpecTypeEnum.Boolean).id();
-		String w1550_accuracy = specOtdr.addSpec("Wavelength", "1550nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
-
-		String w1625 = specOtdr.addSpec("Wavelength", "1625nm", SpecTypeEnum.Boolean).id();
-		String w1625f = specOtdr.addSpec("Wavelength", "1625nm (Filter)", SpecTypeEnum.Boolean).id();
-		String w1625_accuracy = specOtdr.addSpec("Wavelength", "1625nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
+		String w1310 = specSheet.addSpec("Wavelength", "1310nm", SpecTypeEnum.Boolean).id();
+		String w1310_accuracy = specSheet.addSpec("Wavelength", "1310nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
 
 		
-		String w1650f = specOtdr.addSpec("Wavelength", "1650nm (filtered)", SpecTypeEnum.Boolean).id();
-		String w1650_accuracy = specOtdr.addSpec("Wavelength", "1650nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
+		String w1550 = specSheet.addSpec("Wavelength", "1550nm", SpecTypeEnum.Boolean).id();
+		String w1550_accuracy = specSheet.addSpec("Wavelength", "1550nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
 
-		String dr850 = specOtdr.addSpec("Dynamic Range", "850nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
-		String dr1300 = specOtdr.addSpec("Dynamic Range", "1300nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();		
-		String dr1310 = specOtdr.addSpec("Dynamic Range", "1310nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
-		String dr1490 = specOtdr.addSpec("Dynamic Range", "1490nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
-		String dr1550 = specOtdr.addSpec("Dynamic Range", "1550nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
-		String dr1625 = specOtdr.addSpec("Dynamic Range", "1625nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
-		String dr1650 = specOtdr.addSpec("Dynamic Range", "1650nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
-		
-		String filterSpecHighpass = specOtdr.addSpec("Built-in Filter (1625nm)", "Highpass", SpecTypeEnum.Numeric, "nm", Better.Higher).id();
-		String filterSpecIsolation = specOtdr.addSpec("Built-in Filter (1625nm)", "Isolation", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
-
-		String eventDeadZone = specOtdr.addSpec("Event dead zone", "", SpecTypeEnum.Numeric, "m", Better.Higher).id();
-		String attenuationDeadZone = specOtdr.addSpec("Attenuation dead zone", "", SpecTypeEnum.Numeric, "m", Better.Higher).id();
+		String w1625 = specSheet.addSpec("Wavelength", "1625nm", SpecTypeEnum.Boolean).id();
+		String w1625f = specSheet.addSpec("Wavelength", "1625nm (Filter)", SpecTypeEnum.Boolean).id();
+		String w1625_accuracy = specSheet.addSpec("Wavelength", "1625nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
 
 		
-		ProductSpec maxTester715B = specOtdr.addProduct("EXFO", "MaxTester 715B");
+		String w1650f = specSheet.addSpec("Wavelength", "1650nm (filtered)", SpecTypeEnum.Boolean).id();
+		String w1650_accuracy = specSheet.addSpec("Wavelength", "1650nm accuracy", SpecTypeEnum.Range, "nm", Better.Narrower).id();
+
+		String dr850 = specSheet.addSpec("Dynamic Range", "850nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
+		String dr1300 = specSheet.addSpec("Dynamic Range", "1300nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();		
+		String dr1310 = specSheet.addSpec("Dynamic Range", "1310nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
+		String dr1490 = specSheet.addSpec("Dynamic Range", "1490nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
+		String dr1550 = specSheet.addSpec("Dynamic Range", "1550nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
+		String dr1625 = specSheet.addSpec("Dynamic Range", "1625nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
+		String dr1650 = specSheet.addSpec("Dynamic Range", "1650nm", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
+		
+		String filterSpecHighpass = specSheet.addSpec("Built-in Filter (1625nm)", "Highpass", SpecTypeEnum.Numeric, "nm", Better.Higher).id();
+		String filterSpecIsolation = specSheet.addSpec("Built-in Filter (1625nm)", "Isolation", SpecTypeEnum.Numeric, "dB", Better.Higher).id();
+
+		String eventDeadZone = specSheet.addSpec("Event dead zone", "", SpecTypeEnum.Numeric, "m", Better.Higher).id();
+		String attenuationDeadZone = specSheet.addSpec("Attenuation dead zone", "", SpecTypeEnum.Numeric, "m", Better.Higher).id();
+
+		
+		ProductSpec maxTester715B = specSheet.addProduct("EXFO", "MaxTester 715B");
 		maxTester715B.guarantee(displayDevice, "LCD");
 		maxTester715B.guarantee(resolutionId, 800, 480);
 		maxTester715B.guarantee(lcdSize, 7);
@@ -356,7 +368,7 @@ public class Main {
 		maxTester715B.typical(eventDeadZone, 1);
 		maxTester715B.typical(attenuationDeadZone, 4);
 		
-		this.specOtdr.init();
+		this.specSheet.init();
 	}
 
 	protected void saveToFile(SpecSheet specOtdr) {
