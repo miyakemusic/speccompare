@@ -252,11 +252,9 @@ public class Main {
 
 			@Override
 			void onConifgPositioningMap() {
-				JFrame frame = new JFrame();
-				frame.setSize(new Dimension(1000, 800));
-				frame.getContentPane().setLayout(new BorderLayout());
-				frame.getContentPane().add(new JScrollPane(new JTable(new PMConfigModel(specSheet))), BorderLayout.CENTER);
-				frame.setVisible(true);
+				PMConfigUi ui = new PMConfigUi(specSheet);
+				ui.setVisible(true);
+
 			}
 		}.setVisible(true);
 	}

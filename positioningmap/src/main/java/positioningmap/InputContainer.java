@@ -10,12 +10,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+class ComponentAndType {
+	public ComponentAndType(JComponent com, Class<?> clz) {
+		this.component = com;
+		this.cls = clz;
+	}
+	public JComponent component;
+	public Class<?> cls;
+}
 public class InputContainer {
 
 	private Object object;
@@ -125,9 +134,9 @@ public class InputContainer {
 				return this.createCombo(fieldName);
 			}
 			else if (cls.equals(Boolean.class)) {
-				
+				return this.createCheckBox(fieldName);
 			}
-			else if (cls.equals(String.class)){
+			else if (cls.equals(String.class) || cls.equals(Double.class)){
 				return this.createTextField(fieldName);
 			}
 		} catch (SecurityException | NoSuchMethodException e) {
@@ -138,16 +147,26 @@ public class InputContainer {
 
 	}
 	
+	private JPanel createCheckBox(String fieldName) {
+		return new MyPanel(fieldName) {
+			@Override
+			JComponent createWidget(String v) {
+				JCheckBox checkBox = new JCheckBox("");
+				checkBox.setPreferredSize(new Dimension(150, 20));
+				checkBox.setSelected(Boolean.valueOf(v));
+				return checkBox;
+			}
+		};
+	}
+
 	public JPanel createTextField(String fieldName) {
 		return new MyPanel(fieldName) {
-
 			@Override
 			JComponent createWidget(String v) {
 				JTextField textField = new JTextField(v);
 				textField.setPreferredSize(new Dimension(150, 20));
 				return textField;
 			}
-			
 		};
 	}
 	
@@ -157,10 +176,15 @@ public class InputContainer {
 				JTextField text  = ((JTextField)entry.getValue());
 				String methodName = entry.getKey();
 				try {
-					Method method = object.getClass().getMethod(methodName, new Class[]{ String.class });
-					method.invoke(object, text.getText());
+					Class<?> type = findParameterType(methodName);
+					Method method = object.getClass().getMethod(methodName, new Class[]{ type });
+					if (type.equals(Double.class)) {
+						method.invoke(object, Double.valueOf(text.getText()));
+					}
+					else {
+						method.invoke(object, text.getText());
+					}
 				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 			}
@@ -168,15 +192,43 @@ public class InputContainer {
 				JComboBox combo  = ((JComboBox)entry.getValue());
 				String methodName = entry.getKey();
 				try {
-					Method method = SpecDef.class.getMethod(methodName, new Class[]{ String.class });
-					method.invoke(object, combo.getSelectedItem().toString());
+					Class type = findParameterType(methodName);
+					Method method = object.getClass().getMethod(methodName, new Class[]{ type });
+					
+					if (type.isEnum()) {
+						Enum<?> v = Enum.valueOf(type, combo.getSelectedItem().toString());
+						method.invoke(object, v);
+					}
+					else {
+						method.invoke(object, combo.getSelectedItem().toString());
+					}
 				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
 				
 			}
+			else if (entry.getValue() instanceof JCheckBox) {
+				JCheckBox check  = ((JCheckBox)entry.getValue());
+				String methodName = entry.getKey();	
+				try {
+					Method method = object.getClass().getMethod(methodName, new Class[]{ Boolean.class });
+					method.invoke(object, check.isSelected());
+				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					e.printStackTrace();
+				}
+			}
 		}
+	}
+
+	private Class<?> findParameterType(String methodName) {
+		Class<?> type = null;
+		for (Method me : object.getClass().getMethods()) {
+			if (me.getName().equals(methodName)) {
+				type = me.getParameters()[0].getType();
+				break;
+			}
+		}
+		return type;
 	}
 	
 }
