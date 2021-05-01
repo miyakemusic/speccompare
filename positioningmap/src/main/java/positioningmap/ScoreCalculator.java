@@ -1,8 +1,11 @@
 package positioningmap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import positioningmap.Main.Better;
 import positioningmap.Main.SpecTypeEnum;
@@ -33,12 +36,34 @@ public class ScoreCalculator {
 			specs.put(t, categories.getSpecs().get(t));
 		});
 		
+		// At first target product should be filtered. 
+		// Product does not satisfy mandatory requirements should be removed
+		Set<String> notSatistied = new HashSet<>();
+		for (Map.Entry<String, ProductSpec> entry : specSheet.getProductSpecs().entrySet()) {
+			String productName = entry.getKey();
+			ProductSpec productSpec = entry.getValue();
+			for (String targetSpecName : targets) {
+				SpecDef specDef = specSheet.getCategories().get(category).getSpecs().get(targetSpecName);
+				if (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
+					SpecHolder specHolder = productSpec.getValues().get(specDef.id());
+					if (!specHolder.getGuarantee().getAvailable()) {
+						notSatistied.add(productName);
+						break;
+					}
+				}				
+			}
+		}
+				
 		for (Map.Entry<String, SpecDef> entry: specs.entrySet()) {
 			SpecDef specDefY = entry.getValue();
-
+			if (specDefY.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
+				continue;
+			}
 			Map<String, SpecHolder> allProduct = new HashMap<>();
 			specSheet.products().forEach((k, v) -> {
-				allProduct.put(k, v.getValues().get(specDefY.getId()));
+				if (!notSatistied.contains(k)) {
+					allProduct.put(k, v.getValues().get(specDefY.getId()));
+				}
 			});
 			
 			CalcResult minMax = new CalcResult();
@@ -50,12 +75,23 @@ public class ScoreCalculator {
 					System.out.println(entry.getKey() + "." + productEntry.getKey());
 					continue;
 				}
-				minMax.marge(calcMinMax(specDefY, specHolder));	
+				
+				CalcResult res = calcMinMax(specDefY, specHolder);
+				minMax.merge(res);	
+				
+				if (res.min == Double.NaN || res.max == Double.NaN) {
+					System.out.println();
+				}	
+				System.out.println(entry.getKey() + "\n" + productEntry.getKey() + "min=" + res.min + " max=" + res.max);
 			}
-			
+
 		}
 		
+		
 		for (Map.Entry<String, ProductSpec> entry : specSheet.getProductSpecs().entrySet()) {
+			if (notSatistied.contains(entry.getKey())) {
+				continue;
+			}
 			CalcResult score = new CalcResult();
 			score.min = 0.0;
 			score.max = 0.0;
@@ -63,21 +99,26 @@ public class ScoreCalculator {
 			for (String target : targets) {
 				SpecDef specDef = specSheet.getCategories().get(category).getSpecs().get(target);
 				SpecHolder specHolder = entry.getValue().getValues().get(specDef.id());
-				if (specHolder == null) {
+				if ((specHolder == null) || (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0)) {
 					continue;
 				}
 				CalcResult minMax = calcMinMax(specDef, specHolder);
-				
+
 				CalcResult ref = valueRange.get(target);
 				
-				double vmin = (minMax.min - ref.min) / (ref.max - ref.min) - (ref.max - ref.min) * 0.0005;
-				double vmax = (minMax.max - ref.min) / (ref.max - ref.min) + (ref.max - ref.min) * 0.0005;
-				
-				score.min += vmin;				
-				score.max += vmax;
-//				System.out.println();
+				if (ref.range() > 0.0) {
+					double vmin = (minMax.min - ref.min) / (ref.max - ref.min) - (ref.max - ref.min) * 0.0005;
+					double vmax = (minMax.max - ref.min) / (ref.max - ref.min) + (ref.max - ref.min) * 0.0005;
+					
+	
+					score.min += vmin;				
+					score.max += vmax;
+				}
+				System.out.println();
 			}
+			System.out.println();
 		}
+		System.out.println();
 	}
 
 	private CalcResult calcMinMax(SpecDef specDef, SpecHolder specHolder) {
@@ -128,6 +169,9 @@ public class ScoreCalculator {
 				minMax.setValue(specValue.getX());
 			}				
 		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
+			//minMax.setValid(specValue.getAvailable());
+		}
 		return minMax;
 	}
 
@@ -139,6 +183,8 @@ public class ScoreCalculator {
 class CalcResult {
 	public double min = Double.POSITIVE_INFINITY;
 	public double max = Double.NEGATIVE_INFINITY;
+//	private Boolean valid = true;
+	
 	public void setValue(double value) {
 		if ((value != Double.POSITIVE_INFINITY) && (value != Double.NEGATIVE_INFINITY)) {
 			this.min = Math.min(value, min);
@@ -148,7 +194,12 @@ class CalcResult {
 			System.err.println(this.getClass().getName() + " Invalid Value");
 		}
 	}
-	public void marge(CalcResult ref) {
+
+	public double range() {
+		return this.max - this.min;
+	}
+
+	public void merge(CalcResult ref) {
 		if (ref.min != Double.POSITIVE_INFINITY) {
 			this.min = Math.min(ref.min, this.min);
 		}
@@ -156,4 +207,5 @@ class CalcResult {
 			this.max = Math.max(ref.max, this.max);
 		}
 	}
+	
 }

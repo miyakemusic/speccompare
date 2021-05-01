@@ -1,6 +1,7 @@
 package positioningmap;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -11,11 +12,21 @@ import java.util.Set;
 import positioningmap.Main.Better;
 import positioningmap.Main.SpecTypeEnum;
 
+interface FilterInterface {
+
+	boolean categoryEnabled(String category);
+
+	boolean productEnabled(String product);
+
+	boolean qualified(String product, ProductSpec value);
+	
+}
 public class SpecSheet {
 			
 	private String product;
 	private Map<String, ProductSpec> productSpecs = new HashMap<>();
 	private Map<String, SpecCategory> categories = new LinkedHashMap<>();
+	private FilterInterface filterInterface;
 
 
 	public SpecSheet() {}
@@ -24,6 +35,10 @@ public class SpecSheet {
 		this.product = product;
 	}
 
+	public void setFilter(FilterInterface filterInterface) {
+		this.filterInterface = filterInterface;
+	}
+	
 	public SpecDef addSpec(String specCategory, String specName, SpecTypeEnum specType, String unit, Better better) {
 		SpecDef ret = getCategory(specCategory).createSpec(specName, specType, unit, better);
 		return ret;
@@ -58,8 +73,14 @@ public class SpecSheet {
 		return ret;
 	}
 
-	public Set<String> categories() {
-		return this.categories.keySet();
+	public List<String> filteredCategories() {
+		List<String> ret = new ArrayList<>();
+		this.categories.keySet().forEach(cat -> {
+			if (filterInterface.categoryEnabled(cat)) {
+				ret.add(cat);
+			}
+		});
+		return ret;
 	}
 
 	public Map<String, SpecDef> getSpecs(String category) {
@@ -230,7 +251,7 @@ public class SpecSheet {
 		}
 	}
 
-	public Map<String, String> allIds() {
+	public Map<String, String> booleanIds() {
 		Map<String, String> ret = new LinkedHashMap<>();
 		this.categories.forEach((k,v) -> {
 			v.getSpecs().forEach((kk, vv) -> {
@@ -242,6 +263,16 @@ public class SpecSheet {
 		return ret;
 	}
 
+	private Collection<String> allIds() {
+		List<String> ret = new ArrayList<>();
+		this.categories.forEach((k,v) -> {
+			v.getSpecs().forEach((kk, vv) -> {
+				ret.add(vv.getId());
+			});
+		});
+		return ret;
+	}
+	
 	public void delete(String category, String id) {
 		for (Map.Entry<String, SpecDef> entry : categories.get(category).getSpecs().entrySet()) {
 			if (entry.getValue().getId().equals(id)) {
@@ -252,17 +283,6 @@ public class SpecSheet {
 	}
 
 	public void copySpec(String category, String id) {
-//		new MapCopier<String, SpecDef>(this.categories.get(category).getSpecs()) {
-//
-//			@Override
-//			protected void handle(String key, SpecDef value, Map<String, SpecDef> newMap) {
-//				newMap.put(key, value);
-//				if (key.equals(spec)) {
-//					
-//				}
-//			}
-//
-//		};
 		for (Map.Entry<String, SpecDef> entry : categories.get(category).getSpecs().entrySet()) {
 			if (entry.getValue().getId().equals(id)) {
 				SpecDef specDef = entry.getValue();
@@ -271,6 +291,47 @@ public class SpecSheet {
 			}
 		}
 
+	}
+
+	public Collection<String> vendors() {
+		Set<String> ret = new HashSet<>();
+		this.productSpecs.keySet().forEach(k -> {
+			ret.add(k.split("\n")[0]);
+		});
+		return ret;
+	}
+
+	public void clean() {
+		List<String> keys = new ArrayList<>();
+		this.categories.forEach((k,v) ->{
+			if (v.getSpecs().size() == 0) {
+				keys.add(k);
+			}
+		});
+		keys.forEach(key -> {
+			categories.remove(key);
+		});
+		
+		this.products().forEach((productName, productSpec) ->{
+			productSpec.clean(allIds());
+		});
+	}
+
+
+	public Map<String, ProductSpec> filteredProducts() {
+		Map<String, ProductSpec> ret = new LinkedHashMap<>();
+		for (Map.Entry<String, ProductSpec> entry : this.productSpecs.entrySet()) {
+			if (this.filterInterface.productEnabled(entry.getKey())) {
+				if (this.filterInterface.qualified(entry.getKey(), entry.getValue())) {
+					ret.put(entry.getKey(), entry.getValue());
+				}
+			}
+		}
+		return ret;
+	}
+
+	public Collection<? extends String> categories() {
+		return this.categories.keySet();
 	}
 
 }

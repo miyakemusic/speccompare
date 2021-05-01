@@ -3,10 +3,13 @@ package positioningmap;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class FieldEditor extends JFrame {
 
@@ -30,6 +33,9 @@ public abstract class FieldEditor extends JFrame {
 		panel.setLayout(new FlowLayout());
 		
 		for (Field field : object.getClass().getDeclaredFields()) {
+			if (skip(field)) {
+				continue;
+			}
 			panel.add(inputs.createWidget(field.getName()));
 		}
 		
@@ -48,6 +54,16 @@ public abstract class FieldEditor extends JFrame {
 			}
 		};
 		this.getContentPane().add(controlBar, BorderLayout.SOUTH);
+	}
+	private boolean skip(Field field) {
+		for (int i = 0; i < field.getAnnotations().length; i++) {
+			Annotation an = field.getAnnotations()[i];
+			if (an.annotationType().getName().equals(JsonIgnore.class.getName())) {
+				return true;
+			}
+			
+		}
+		return false;
 	}
 
 }

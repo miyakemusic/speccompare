@@ -1,13 +1,8 @@
 package positioningmap;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
-
-import positioningmap.PMConfigValue.Level;
 
 class MyList {
 	private List<MyRow> list = new ArrayList<>();
@@ -51,28 +46,32 @@ class MyRow {
 	}
 }
 
-public class PMConfigModel extends AbstractTableModel {
+public abstract class UseCaseConfigModel extends AbstractTableModel {
 
 	private MyList myList = new MyList();
-	private PMDefContainer pmdefs = new PMDefContainer();
+	
 	private List<String> title = new ArrayList<>();
 	private SpecSheet specSheet;
-	public PMConfigModel(SpecSheet specSheet) {
-		pmdefs.add("MFH/FTTH(G-PON/GE-PON)");
-		pmdefs.add("MFH(NG-PON2)");
-		pmdefs.add("MFH/DAA/RPHY(WDM)");
-		pmdefs.add("MFH(OADM)");
-		pmdefs.add("Core");
-		pmdefs.add("Metro");
-		pmdefs.add("Submarine");
-		pmdefs.add("DCI");
-		pmdefs.add("DCI(ROADM)");
-		pmdefs.add("Fiber Manufacturing");
-		
+
+	private UseCaseContainer pmdefs;
+	public UseCaseConfigModel(SpecSheet specSheet, UseCaseContainer pmdefs2) {
+		this.pmdefs =pmdefs2;
+//		pmdefs.add("MFH/FTTH(G-PON/GE-PON)");
+//		pmdefs.add("MFH(NG-PON2)");
+//		pmdefs.add("MFH/DAA/RPHY(WDM)");
+//		pmdefs.add("MFH(OADM)");
+//		pmdefs.add("Core");
+//		pmdefs.add("Metro");
+//		pmdefs.add("Submarine");
+//		pmdefs.add("DCI");
+//		pmdefs.add("DCI(ROADM)");
+//		pmdefs.add("Fiber Manufacturing");
+
 		this.specSheet = specSheet;
 		update();
 	}
 
+	
 	private void update() {
 		title.clear();
 		myList.clear();
@@ -121,9 +120,12 @@ public class PMConfigModel extends AbstractTableModel {
 		}
 	}
 
-	public PMConfigValue getValue(int selectedRow, int selectedColumn) {
-		PMConfigValue ret =  pmdefs.get(title.get(selectedColumn)).value(myList.row(selectedRow).id());
+	public UseCaseDefElement getValue(int selectedRow, int selectedColumn) {
+		UseCaseDefElement ret =  pmdefs.get(title.get(selectedColumn)).value(myList.row(selectedRow).id());
 		return ret;
 	}
+
+
+	abstract protected void save();
 
 }

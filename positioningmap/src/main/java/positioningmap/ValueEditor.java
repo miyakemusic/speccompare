@@ -94,7 +94,7 @@ public class ValueEditor extends JDialog {
 							Method method = SpecValue.class.getMethod("set" + key.field, new Class[]{ Double.class });
 							
 							double d;
-							if (value.isBlank()) {
+							if (value.isEmpty()) {
 								d = Double.NEGATIVE_INFINITY;
 							}
 							else {
@@ -129,7 +129,7 @@ public class ValueEditor extends JDialog {
 	}
 
 	private void createArea(SpecDef specDef, SpecValue specValue, JPanel panel) {
-		if (specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) {
+		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
 			panel.setPreferredSize(new Dimension(200, 80));
 			panel.add(createTextField(specValue, "X"));
 			panel.add(new JLabel(specDef.getUnit()));

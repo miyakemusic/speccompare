@@ -1,22 +1,21 @@
 package positioningmap;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.JFrame;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import positioningmap.UseCaseDefElement.Level;
+
 public class Main {
 
+	private static final String FILTER_JSON = "Filter.json";
 	protected static final int SPEC_COL = 1;
 	protected static final int CATEGORY_COL = 0;
 	
@@ -39,7 +38,7 @@ public class Main {
 	}
 	
 	public enum SpecTypeEnum {
-		TwoDmensionalSize, Numeric, Choice, Boolean, Range
+		TwoDmensionalSize, Numeric, Choice, Boolean, Variation, Range
 		
 	}
 	public enum Unit {
@@ -54,13 +53,14 @@ public class Main {
 	private List<List<String>> list = new ArrayList<>();
 	private List<String> title = new ArrayList<>();
 	private SpecSheet specSheet = new SpecSheet("OTDR");
+	private UseCaseContainer pmdefs = new UseCaseContainer();
+	protected FilterContainer filterContainer = new FilterContainer();
 	public Main() {
 		
 //		createDemo();
 		loadFile();
 		
 		AbstractTableModel model = new AbstractTableModel() {
-			
 			@Override
 			public String getColumnName(int column) {
 				return title.get(column);
@@ -80,7 +80,6 @@ public class Main {
 			public Object getValueAt(int rowIndex, int columnIndex) {
 				return list.get(rowIndex).get(columnIndex + 1);
 			}
-			
 		};
 		
 		updateModel(specSheet, model, false);
@@ -103,14 +102,14 @@ public class Main {
 
 			@Override
 			public Map<String, String> parents() {
-				return specSheet.allIds();
+				return specSheet.booleanIds();
 			}
 
 			@Override
 			public boolean isEnabled(int row, String product) {
 				String id = list.get(row).get(0);
 				SpecDef specDef = specSheet.find(id);
-				if (specDef.getParentId() != null && !specDef.getParentId().isBlank()) {
+				if (specDef.getParentId() != null && !specDef.getParentId().isEmpty()) {
 					SpecHolder value = specSheet.getValue(specDef.getParentId(), product);
 					if (value.getGuarantee().getAvailable()) {
 						return true;
@@ -121,6 +120,50 @@ public class Main {
 				}
 				return true;
 			}
+
+
+			@Override
+			public ResultLevelEnum qualified(int row, String columnName) {
+				String id = list.get(row).get(0);
+				SpecHolder specHolder = specSheet.getProductSpecs().get(columnName).getValues().get(id);
+				UseCaseDef useCaseDef = pmdefs.get(filterContainer.getUseCaseName());
+				
+				return checkQualify(useCaseDef, specHolder, id);
+				//return false;
+			}
+			@Override
+			public Collection<String> vendors() {
+				return specSheet.vendors();
+			}
+
+			@Override
+			public Boolean filter(String type, String string) {
+				return filterContainer .get(type, string);
+			}
+
+			@Override
+			public void setFilter(String type, String string, Boolean v) {
+				filterContainer.set(type, string, v);
+			}
+
+			@Override
+			public void requestUpdate() {
+				updateModel(specSheet, model, true);
+			}
+
+			@Override
+			public Collection<String> useCases() {
+				return pmdefs.defs();
+			}
+
+			@Override
+			public void filterUsecase(boolean b, String useCaseName) {
+				filterContainer.setUseCase(useCaseName);
+				filterContainer.setUseCaseFilter(b);
+				
+				updateModel(specSheet, model, true);
+			}
+
 		};
 		
 		new TableFrame(model, tableFrameInterface) {
@@ -240,7 +283,7 @@ public class Main {
 
 			@Override
 			void onPositioningMap() {
-				new PositioningMapUi(new PositioningMapModel(specSheet)).setVisible(true);
+				new PositioningMapUi(new PositioningMapModel(specSheet, pmdefs)).setVisible(true);
 			}
 
 			@Override
@@ -252,9 +295,15 @@ public class Main {
 
 			@Override
 			void onConifgPositioningMap() {
-				PMConfigUi ui = new PMConfigUi(specSheet);
-				ui.setVisible(true);
+				UseCaseConfigUi ui = new UseCaseConfigUi(specSheet, pmdefs) {
 
+					@Override
+					protected void save() {
+						saveUseSaveConfig();
+					}
+					
+				};
+				ui.setVisible(true);
 			}
 		}.setVisible(true);
 	}
@@ -263,10 +312,118 @@ public class Main {
 		try {
 			this.specSheet = new ObjectMapper().readValue(new File("otdr.spec"), SpecSheet.class);
 			this.specSheet.init();
+			
+			this.pmdefs = new ObjectMapper().readValue(new File("pmdef.json"), UseCaseContainer.class);
+			this.pmdefs.init(new UseCaseDefInterface() {
+				@Override
+				public String getParentId(String id) {
+					return specSheet.find(id).getParentId();
+				}
+			});
+			if (new File(FILTER_JSON).exists()) {
+				this.filterContainer = new ObjectMapper().readValue(new File(FILTER_JSON), FilterContainer.class);
+			}
+			this.specSheet.setFilter(new FilterInterface() {
+				@Override
+				public boolean categoryEnabled(String cat) {
+					return filterContainer.get(FilterContainer.Categories, cat);
+				}
+
+				@Override
+				public boolean productEnabled(String product) {
+					String vendor = product.split("\n")[0];
+					return filterContainer.get(FilterContainer.Vendors, vendor);
+				}
+
+				@Override
+				public boolean qualified(String productName, ProductSpec value) {
+					if (!filterContainer.isUseCaseFilter()) {
+						return true;
+					}
+					if ( filterContainer.getUseCaseName().isEmpty() || filterContainer.getUseCaseName().equals("-")) {
+						return true;
+					}
+					
+					UseCaseDef useCaseDef = pmdefs.get(filterContainer.getUseCaseName());
+					if (useCaseDef == null) {
+						return true;
+					}
+					System.out.println(productName);
+					for (Map.Entry<String, SpecHolder> entry : value.getValues().entrySet()) {
+						SpecHolder specHolder = entry.getValue();
+						String id = entry.getKey();
+						if (checkQualify(useCaseDef, specHolder, id) != ResultLevelEnum.Qualify) {
+							return false;
+						}
+												
+					};
+					return true;
+				}
+			});
 		} catch (IOException e) {
 
 			e.printStackTrace();
 		}
+	}
+
+	public void saveUseSaveConfig() {
+		try {
+			pmdefs.clean();			
+			new ObjectMapper().writeValue(new File("pmdef.json"), pmdefs);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected void saveToFile(SpecSheet specOtdr) {
+		try {
+			specOtdr.clean();
+			new ObjectMapper().writeValue(new File("otdr.spec"), specOtdr);
+			new ObjectMapper().writeValue(new File(FILTER_JSON), this.filterContainer);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void updateModel(SpecSheet specOtdr, AbstractTableModel model, boolean structureChanged) {
+		this.list.clear();
+		this.title.clear();
+		
+		Map<String, ProductSpec> ps = specOtdr.filteredProducts();
+		for (String category : specOtdr.filteredCategories()) {
+			Map<String, SpecDef> specs = specOtdr.getSpecs(category);
+			for (String specName : specs.keySet()) {
+				SpecDef spec = specs.get(specName);
+				List<String> line = new ArrayList<>();
+				line.add(spec.id());
+				line.add(category);
+				String specWithUnit = specName;
+				if (!spec.getUnit().isEmpty()) {
+					specWithUnit = specName + " (" + spec.getUnit() + ")";
+				}
+				line.add(specWithUnit);
+
+				for (Map.Entry<String, ProductSpec> entry : ps.entrySet()) {
+					ProductSpec pn = entry.getValue();
+					
+					line.add(pn.value(spec.id()) /*+ " " + spec.unit()*/);
+				}
+				list.add(line);
+			}
+		}
+		
+		title.add("Category");
+		title.add("Spec");
+		for (String product : ps.keySet()) {
+			title.add(product);
+		}
+		if (structureChanged) {
+			model.fireTableStructureChanged();
+		}
+		else {
+			model.fireTableDataChanged();
+		}
+
 	}
 
 	private void createDemo() {
@@ -369,54 +526,86 @@ public class Main {
 		this.specSheet.init();
 	}
 
-	protected void saveToFile(SpecSheet specOtdr) {
-		try {
-			new ObjectMapper().writeValue(new File("otdr.spec"), specOtdr);
-		} catch (IOException e) {
-			e.printStackTrace();
+	private ResultLevelEnum checkQualify(UseCaseDef useCaseDef, SpecHolder specHolder, String id) {
+		UseCaseDefElement useCaseDefE = useCaseDef.value(id);
+		ResultLevelEnum failResult = null;
+		if (useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) {
+			failResult = ResultLevelEnum.Critical;
 		}
-	}
-
-	private void updateModel(SpecSheet specOtdr, AbstractTableModel model, boolean structureChanged) {
-		this.list.clear();
-		this.title.clear();
+		else if (useCaseDefE.getLevel().compareTo(Level.NiceToHave) == 0) {
+			failResult = ResultLevelEnum.Warning;
+		}
 		
-		Map<String, ProductSpec> ps = specOtdr.products();
-		for (String category : specOtdr.categories()) {
-			Map<String, SpecDef> specs = specOtdr.getSpecs(category);
-			for (String specName : specs.keySet()) {
-				SpecDef spec = specs.get(specName);
-				List<String> line = new ArrayList<>();
-				line.add(spec.id());
-//				line.add(spec.getSpecType().toString());
-				line.add(category);
-				String specWithUnit = specName;
-				if (!spec.getUnit().isBlank()) {
-					specWithUnit = specName + " (" + spec.getUnit() + ")";
+		if (useCaseDefE.getDefined() && 
+				((useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) || (useCaseDefE.getLevel().compareTo(Level.NiceToHave) == 0))) {
+			if (specHolder == null) {
+				return failResult;
+			}
+			SpecValue specValue = specHolder.getGuarantee();
+			if (specValue == null) {
+				specValue = specHolder.getTypical();
+			}
+			SpecDef specDef = specSheet.find(id);
+			if (specDef == null) {
+				System.out.println();
+			}
+			
+			boolean ret = new SpecTypeBranch(specDef, specValue) {
+
+				@Override
+				protected boolean onVaridation(SpecValue specValue2) {
+					return judge(useCaseDefE, specDef, specValue2);
 				}
-				line.add(specWithUnit);
-//				line.add(spec.unit());
-//				line.add(spec.id());
-				
-				
-				for (ProductSpec pn : ps.values()) {
-					line.add(pn.value(spec.id()) /*+ " " + spec.unit()*/);
+
+				private boolean judge(UseCaseDefElement useCaseDefE, SpecDef specDef, SpecValue specValue2) {
+					if (specDef.getBetter().compareTo(Better.Higher) == 0) {
+						return useCaseDefE.getThreshold() <= specValue2.getX();
+					}
+					else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
+						return useCaseDefE.getThreshold() >= specValue2.getX();
+					}
+					
+					return false;
 				}
-				list.add(line);
+
+				@Override
+				protected boolean onChoice(SpecValue specValue2) {
+					// TODO Auto-generated method stub
+					return false;
+				}
+
+				@Override
+				protected boolean onRange(SpecValue specValue2) {
+					// TODO Auto-generated method stub
+					return false;
+				}
+
+				@Override
+				protected boolean onNumeric(SpecValue specValue2) {
+					return judge(useCaseDefE, specDef, specValue2);
+				}
+
+				@Override
+				protected boolean onBoolean(SpecValue specValue2) {
+					if (!specValue2.getDefined()) {
+						return false;
+					}
+					if (!specValue2.getAvailable()) {
+						return false;
+					}
+					return true;
+				}
+				
+			}.branch();
+			
+			if (!ret) {
+				return failResult;
+			}
+			else {
+				return ResultLevelEnum.Qualify;
 			}
 		}
 		
-		title.add("Category");
-		title.add("Spec");
-		for (String product : ps.keySet()) {
-			title.add(product);
-		}
-		if (structureChanged) {
-			model.fireTableStructureChanged();
-		}
-		else {
-			model.fireTableDataChanged();
-		}
-
+		return ResultLevelEnum.Qualify;
 	}
 }

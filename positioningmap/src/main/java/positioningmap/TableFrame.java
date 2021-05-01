@@ -18,6 +18,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
@@ -26,9 +28,13 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -61,7 +67,21 @@ interface TableFrameInterface {
 
 	Map<String, String> parents();
 
-	boolean isEnabled(int row, String product);	
+	boolean isEnabled(int row, String product);
+
+	Collection<String> vendors();
+
+	Boolean filter(String type, String string);
+
+	void setFilter(String type, String string, Boolean v);
+
+	void requestUpdate();
+
+	Collection<String> useCases();
+
+	void filterUsecase(boolean b, String useCaseName);
+
+	ResultLevelEnum qualified(int row, String columnName);	
 }
 
 public abstract class TableFrame extends JFrame {
@@ -105,6 +125,57 @@ public abstract class TableFrame extends JFrame {
 		this.setLocationRelativeTo(null);
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout());
+		
+		JMenuBar menuBar = new JMenuBar();
+		this.setJMenuBar(menuBar);
+		JMenu menuFilter = new JMenu("Filter");
+		menuBar.add(menuFilter);
+		JMenuItem menuFilterStatic = new JMenuItem("Static");
+		menuFilter.add(menuFilterStatic);
+		menuFilterStatic.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				FilterDialog dialog = new FilterDialog(new FilterDialogInterface() {
+
+					@Override
+					public Collection<String> vendors() {
+						return tableFrameInterface.vendors();
+					}
+
+					@Override
+					public Collection<String> categories() {
+						return tableFrameInterface.categories();
+					}
+
+					@Override
+					public Boolean filter(String type, String string) {
+						return tableFrameInterface.filter(type, string);
+					}
+
+					@Override
+					public void set(String type, String string, Boolean v) {
+						tableFrameInterface.setFilter(type, string, v);
+					}
+
+					@Override
+					public void changeCompleted() {
+						tableFrameInterface.requestUpdate();
+					}
+					
+				});
+				dialog.setModal(true);
+				dialog.setVisible(true);
+			}			
+		});
+		
+//		JMenuItem menuFilterDynamic = new JMenuItem("Dynamic");
+//		menuFilter.add(menuFilterDynamic);
+//		menuFilterDynamic.addActionListener(new ActionListener() {
+//			@Override
+//			public void actionPerformed(ActionEvent e) {
+//
+//			}
+//		});
 		
 		JButton save = new JButton("Save");
 		panel.add(save);
@@ -183,6 +254,21 @@ public abstract class TableFrame extends JFrame {
 				onConifgPositioningMap();
 			}
 		});
+		
+		JCheckBox filterCheck = new JCheckBox("Filter");
+		panel.add(filterCheck);
+		JComboBox<String> useCaseCombo = new JComboBox<>();
+		useCaseCombo.addItem("-");
+		tableFrameInterface.useCases().forEach(t -> useCaseCombo.addItem(t));
+		panel.add(useCaseCombo);
+		ActionListener actionListener = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				tableFrameInterface.filterUsecase(filterCheck.isSelected(), useCaseCombo.getSelectedItem().toString());
+			}
+		};
+		useCaseCombo.addActionListener(actionListener);
+		filterCheck.addActionListener(actionListener);
 		
 		this.getContentPane().add(panel, BorderLayout.NORTH);
 		
@@ -327,7 +413,7 @@ public abstract class TableFrame extends JFrame {
 		menuCopy.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selecteHeaderName != null && !selecteHeaderName.isBlank()) {
+				if (selecteHeaderName != null && !selecteHeaderName.isEmpty()) {
 					copyProduct(selecteHeaderName);
 				}
 			}
@@ -338,7 +424,7 @@ public abstract class TableFrame extends JFrame {
 		menuToLeft.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selecteHeaderName != null && !selecteHeaderName.isBlank()) {
+				if (selecteHeaderName != null && !selecteHeaderName.isEmpty()) {
 					moveLeft(selecteHeaderName);
 				}
 			}
@@ -349,7 +435,7 @@ public abstract class TableFrame extends JFrame {
 		menuToRight.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (selecteHeaderName != null && !selecteHeaderName.isBlank()) {
+				if (selecteHeaderName != null && !selecteHeaderName.isEmpty()) {
 					moveRight(selecteHeaderName);
 				}
 			}
@@ -461,7 +547,13 @@ public abstract class TableFrame extends JFrame {
 	         	        
 	        if (column >= 2) {
 		        if (!tableFrameInterface.isEnabled(row, table.getColumnName(column)) ) {
-		        	this.setBackground(Color.DARK_GRAY);
+		        	this.setBackground(Color.LIGHT_GRAY);
+		        }
+		        if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Critical)== 0) {
+		        	this.setBackground(Color.RED);
+		        }
+		        else if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Warning)== 0) {
+		        	this.setBackground(Color.PINK);
 		        }
 	        }
 	        this.setFont(table.getFont());

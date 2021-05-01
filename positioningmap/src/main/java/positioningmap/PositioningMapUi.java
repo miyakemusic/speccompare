@@ -1,6 +1,5 @@
 package positioningmap;
 
-import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Color;
@@ -14,13 +13,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
+import java.util.List;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
 
 public class PositioningMapUi extends JFrame {
 
@@ -48,7 +46,7 @@ public class PositioningMapUi extends JFrame {
 		JPanel toolBar = new JPanel();
 		this.getContentPane().add(toolBar, BorderLayout.NORTH);
 		toolBar.setLayout(new FlowLayout());
-		toolBar.add(createCombo("X", positioningMapModel, new MyComboListener() {
+		toolBar.add(createCombo("X", positioningMapModel.getSpecList(), new MyComboListener() {
 			@Override
 			public void onChange(String category, String specname) {
 				positioningMapModel.setX(category, specname);
@@ -56,24 +54,32 @@ public class PositioningMapUi extends JFrame {
 			}
 		}));
 		
-		toolBar.add(createCombo("Y", positioningMapModel, new MyComboListener() {
+		toolBar.add(createCombo("Y", positioningMapModel.getSpecList(), new MyComboListener() {
 			@Override
 			public void onChange(String category, String specname) {
 				positioningMapModel.setY(category, specname);
-				canvas.repaint(1000);
+				canvas.repaint();
+			}
+		}));
+		
+		toolBar.add(createCombo("Use Case", positioningMapModel.getUseCases(), new MyComboListener() {
+			@Override
+			public void onChange(String category, String specname) {
+				positioningMapModel.setUseCase(specname);
+				canvas.repaint();
 			}
 		}));
 	}
 
 	
-	private Component createCombo(String title, PositioningMapModel positioningMapModel2, MyComboListener listener) {
+	private Component createCombo(String title, List<String> positioningMapModel2, MyComboListener listener) {
 		JPanel ret = new JPanel();
 		ret.setLayout(new FlowLayout());
 		ret.add(new JLabel(title));
 		JComboBox<String> combo = new JComboBox<>();
 		ret.add(combo);
 		
-		positioningMapModel2.getSpecList().forEach(v -> {
+		positioningMapModel2.forEach(v -> {
 			combo.addItem(v);
 		});
 		
@@ -81,8 +87,13 @@ public class PositioningMapUi extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String value = combo.getSelectedItem().toString();
-				String[] tmp = value.split("\\|");
-				listener.onChange(tmp[0], tmp[1]);
+				if (value.contains("|")) {
+					String[] tmp = value.split("\\|");
+					listener.onChange(tmp[0], tmp[1]);
+				}
+				else {
+					listener.onChange("", value);
+				}
 			}
 		});
 		return ret;
@@ -100,7 +111,15 @@ public class PositioningMapUi extends JFrame {
 		}
 
 		@Override
+		public void update(Graphics g) {
+			// TODO Auto-generated method stub
+			super.update(g);
+		}
+
+		@Override
 		public void paint(Graphics g1) {
+			super.paint(g1);
+			
 			System.out.println("paint");
 			Graphics2D g = (Graphics2D)g1;
 			

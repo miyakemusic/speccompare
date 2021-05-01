@@ -79,7 +79,7 @@ public class SpecValue implements Cloneable {
 
 	public void setString(String string) {
 		this.string = string;
-		if (this.string.isBlank()) {
+		if (this.string.isEmpty()) {
 			this.defined = false;
 		}
 		else {

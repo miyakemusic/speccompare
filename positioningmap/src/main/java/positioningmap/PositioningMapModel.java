@@ -32,13 +32,12 @@ public class PositioningMapModel {
 	private String yAxisCategory;
 	private String yAxisSpec;
 	private String yAxisTitle;
+	private UseCaseContainer pmdefs;
 	
-	public PositioningMapModel(SpecSheet specSheet) {
+	public PositioningMapModel(SpecSheet specSheet, UseCaseContainer pmdefs2) {
 		this.specSheet = specSheet;
-	}
-	
-	private NumberFormat formatter = new DecimalFormat("#0.00"); 
-	private void createData() {
+		this.pmdefs = pmdefs2;
+		
 		specSheet.getCategories().forEach((k,v) -> {
 			v.getSpecs().forEach((kk, vv) -> {
 				xAxisCategory = k;
@@ -49,53 +48,30 @@ public class PositioningMapModel {
 			});
 		});
 		
+	}
+	
+	private NumberFormat formatter = new DecimalFormat("#0.00"); 
+	private void createData() {
+
 		xlabels.clear();
 		ylabels.clear();
 		elements.clear();
 		
 		xAxisTitle = xAxisCategory + " / " + xAxisSpec + " [" + this.specSheet.getSpecs(xAxisCategory).get(xAxisSpec).getUnit() + "]";
-		yAxisTitle = yAxisCategory + " / " + yAxisSpec + " [" + this.specSheet.getSpecs(yAxisCategory).get(yAxisSpec).getUnit() + "]";
+//		yAxisTitle = yAxisCategory + " / " + yAxisSpec + " [" + this.specSheet.getSpecs(yAxisCategory).get(yAxisSpec).getUnit() + "]";
 		
 		SpecDef specDefX = specSheet.getCategories().get(xAxisCategory).getSpecs().get(xAxisSpec);
-		SpecDef specDefY = specSheet.getCategories().get(yAxisCategory).getSpecs().get(yAxisSpec);
+//		SpecDef specDefY = specSheet.getCategories().get(yAxisCategory).getSpecs().get(yAxisSpec);
 		
-		
-		List<String> target = Arrays.asList("Dynamic Range@1310nm", "Dynamic Range@1550nm", "1310nm accuracy", "1550nm accuracy");
-//		ScoreCalculatorInterface scoreCalculatorInterface = new ScoreCalculatorInterface() {
-//			@Override
-//			public List<String> specNames() {
-//				return target;
-//			}
-//
-//			@Override
-//			public SpecDef specDef(String specName) {
-//				return specSheet.getSpecs("OTDR").get(specName);
-//			}
-//
-//			@Override
-//			public List<SpecHolder> allProductSpec(String id) {
-//				List<SpecHolder> ret = new ArrayList<>();
-//				specSheet.getProductSpecs().forEach((productName, productSpec) -> {
-//					SpecHolder specHolder = productSpec.getValues().get(id);
-//					if (specHolder != null) {
-//						ret.add(specHolder);
-//					}
-//				});
-//				return ret;
-//			}
-//
-//			@Override
-//			public List<String> productNames() {
-//				return new ArrayList<String>(specSheet.getProductSpecs().keySet());
-//			}
-//
-//			@Override
-//			public SpecHolder getSpec(String productName, String id) {
-//				return specSheet.getProductSpecs().get(productName).getValues().get(id);
-//			}
-//
-//		};
-		ScoreCalculator calc = new ScoreCalculator(specSheet, target);
+		UseCaseDef usecaseDef = pmdefs.get(this.yAxisSpec);
+		List<String> targetIds = usecaseDef.getDefines();
+		List<String> targetSPecNames = new ArrayList<>();
+		targetIds.forEach(t -> {
+			targetSPecNames.add(specSheet.find(t).getName()); 
+		});
+		yAxisTitle = targetSPecNames.toString();
+
+		ScoreCalculator calc = new ScoreCalculator(specSheet, targetSPecNames);
 		
 		double xmaxMax = Double.NEGATIVE_INFINITY;
 		double xminMin = Double.POSITIVE_INFINITY;
@@ -114,15 +90,12 @@ public class PositioningMapModel {
 			double xmax = specValueX.getY();
 			xmaxMax = Math.max(Math.max(xmax, xmaxMax), xmin);
 			xminMin = Math.min(Math.min(xmin, xminMin), xmax);	
-			
-			SpecHolder specY = values.get(specDefY.getId());
-			if ((specX == null) || (specY == null)) {
-				continue;
-			}
 
 			CalcResult result = calc.calc(product);
-			
-			SpecValue specValueY = getValue(specY);
+			if (result == null) {
+				continue;
+			}
+//			SpecValue specValueY = getValue(specY);
 			double ymin = 0.0;
 			double ymax = 0.0;
 
@@ -183,6 +156,8 @@ public class PositioningMapModel {
 		xspan = (xmaxMax - xminMin);
 		yspan = (ymaxMax - yminMin);
 		
+		this.updateRatio();
+		
 		xoffset = xminMin;//xspan * marginRatio;
 		yoffset = yminMin;
 		
@@ -211,6 +186,10 @@ public class PositioningMapModel {
 		this.width = width2;
 		this.height = height2;
 		
+		updateRatio();
+	}
+
+	private void updateRatio() {
 		xratio = (this.width * (1.0 - marginRatio * 2.0)) / xspan;
 		yratio = (this.height * (1.0 - marginRatio * 2.0)) / yspan;
 	}
@@ -262,6 +241,15 @@ public class PositioningMapModel {
 	public void setY(String category, String specname) {
 		yAxisCategory = category;
 		yAxisSpec = specname;
+		createData();
+	}
+
+	public List<String> getUseCases() {
+		return this.pmdefs.defs();
+	}
+
+	public void setUseCase(String specname) {
+		this.yAxisSpec = specname;
 		createData();
 	}
 }

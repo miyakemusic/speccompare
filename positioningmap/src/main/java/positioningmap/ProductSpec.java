@@ -1,7 +1,10 @@
 package positioningmap;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -93,7 +96,7 @@ public class ProductSpec implements Cloneable {
 					g += generateText(id, typical) + "(Typ.)";
 				}
 			}
-			if (!ret.isBlank() && !g.isBlank()) {
+			if (!ret.isEmpty() && !g.isEmpty()) {
 				ret = ret + " / " + g;
 			}
 			else {
@@ -107,10 +110,13 @@ public class ProductSpec implements Cloneable {
 	private String generateText(String id, SpecValue guarantee) {
 		SpecValue specValue = guarantee;
 		if (this.specInterface.type(id).compareTo(SpecTypeEnum.Range) == 0) {
-			if (Math.abs(specValue.getX()) == Math.abs(specValue.getY())) {
-				return "Å}" + Math.abs(specValue.getX());
-			}
+//			if (Math.abs(specValue.getX()) == Math.abs(specValue.getY())) {
+//				return "Å}" + Math.abs(specValue.getX());
+//			}
 			return specValue.getX() + " ... " + specValue.getY();
+		}
+		else if (this.specInterface.type(id).compareTo(SpecTypeEnum.Variation) == 0) {
+			return "Å}" + specValue.getX();
 		}
 		else if (this.specInterface.type(id).compareTo(SpecTypeEnum.TwoDmensionalSize) == 0) {
 			return specValue.getX() + " x " + specValue.getY();
@@ -146,5 +152,17 @@ public class ProductSpec implements Cloneable {
 		}
 		return null;
 		
+	}
+
+	public void clean(Collection<String> useIds) {
+		List<String> removes = new ArrayList<>();
+		this.values.keySet().forEach(id -> {
+			if (!useIds.contains(id)) {
+				removes.add(id);
+			}
+		});
+		removes.forEach(id -> {
+			values.remove(id);
+		});
 	}
 }
