@@ -1,5 +1,6 @@
 package positioningmap;
 
+import positioningmap.Main.Better;
 import positioningmap.Main.SpecTypeEnum;
 
 public abstract class SpecTypeBranch {
@@ -41,4 +42,37 @@ public abstract class SpecTypeBranch {
 
 	abstract protected boolean onBoolean(SpecValue specValue2);
 
+}
+abstract class BetterBranch {
+	private SpecDef specDef;
+	private SpecValue specValue;
+
+	public BetterBranch(SpecDef specDef, SpecValue specValue) {
+		this.specDef = specDef;
+		this.specValue = specValue;
+	}
+	
+	public boolean branch() {
+		if (specDef.getBetter().compareTo(Better.Higher) == 0) {
+			return onHigher(specValue);
+		}
+		else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
+			return onLower(specValue);
+		}
+		else if (specDef.getBetter().compareTo(Better.Narrower) == 0) {
+			return onNarrower(specValue);
+		}
+		else if (specDef.getBetter().compareTo(Better.Wider) == 0) {
+			return onWilder(specValue);
+		}
+		return false;
+	}
+
+	protected abstract boolean onWilder(SpecValue specValue2);
+
+	protected abstract boolean onNarrower(SpecValue specValue2);
+
+	protected abstract boolean onLower(SpecValue specValue2);
+
+	protected abstract boolean onHigher(SpecValue specValue2);
 }

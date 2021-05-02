@@ -117,7 +117,7 @@ public class SpecSheet {
 	};
 	
 	public ProductSpec addProduct(String vendorName, String modelName) {
-		ProductSpec newSpec = new ProductSpec(modelName, specInterface);
+		ProductSpec newSpec = new ProductSpec(/*modelName, */specInterface);
 		productSpecs.put(modelName, newSpec);
 		return newSpec;
 	}
@@ -263,7 +263,7 @@ public class SpecSheet {
 		return ret;
 	}
 
-	private Collection<String> allIds() {
+	public Collection<String> allIds() {
 		List<String> ret = new ArrayList<>();
 		this.categories.forEach((k,v) -> {
 			v.getSpecs().forEach((kk, vv) -> {

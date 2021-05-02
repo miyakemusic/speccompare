@@ -46,6 +46,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -81,7 +82,11 @@ interface TableFrameInterface {
 
 	void filterUsecase(boolean b, String useCaseName);
 
-	ResultLevelEnum qualified(int row, String columnName);	
+	ResultLevelEnum qualified(int row, String columnName);
+
+	String selectedUseCase();
+
+	boolean useCaseFilterEnabeld();	
 }
 
 public abstract class TableFrame extends JFrame {
@@ -120,7 +125,7 @@ public abstract class TableFrame extends JFrame {
 	
 	public TableFrame(AbstractTableModel model, TableFrameInterface tableFrameInterface) {
 		this.tableFrameInterface = tableFrameInterface;
-		this.setSize(new Dimension(1000, 800));
+		this.setSize(new Dimension(1200, 800));
 		this.getContentPane().setLayout(new BorderLayout());
 		this.setLocationRelativeTo(null);
 		JPanel panel = new JPanel();
@@ -267,6 +272,8 @@ public abstract class TableFrame extends JFrame {
 				tableFrameInterface.filterUsecase(filterCheck.isSelected(), useCaseCombo.getSelectedItem().toString());
 			}
 		};
+		useCaseCombo.setSelectedItem(tableFrameInterface.selectedUseCase());
+		filterCheck.setSelected(tableFrameInterface.useCaseFilterEnabeld());
 		useCaseCombo.addActionListener(actionListener);
 		filterCheck.addActionListener(actionListener);
 		
@@ -526,34 +533,43 @@ public abstract class TableFrame extends JFrame {
 	}
 
 	class StatusColumnCellRenderer extends DefaultTableCellRenderer {
-
+		private Color lightGreen = new Color(152, 251,152);
+		private Color gray = new Color(100, 100, 100);
+		private Color yellow = new Color(255, 255, 0);
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
 				int row, int column) {
 			
 			if (row == currentRow) {
-				this.setBackground(Color.YELLOW);
+				this.setBackground(Color.LIGHT_GRAY);
 			}
 			else if(isSelected) {
-	            this.setBackground(Color.GREEN);
+//	            this.setBackground(Color.GREEN);
 	        }
 	        else {
 	            this.setBackground(table.getBackground());
 	        }
 
 	        if(hasFocus) {
-	            this.setBackground(Color.GREEN);
+	            //this.setBackground(Color.GREEN);
+	        	this.setBorder(new LineBorder(Color.BLACK, 1));
+	        }
+	        else {
+	        	this.setBorder(null);
 	        }
 	         	        
 	        if (column >= 2) {
 		        if (!tableFrameInterface.isEnabled(row, table.getColumnName(column)) ) {
-		        	this.setBackground(Color.LIGHT_GRAY);
+		        	this.setBackground(gray);
 		        }
 		        if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Critical)== 0) {
 		        	this.setBackground(Color.RED);
 		        }
 		        else if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Warning)== 0) {
-		        	this.setBackground(Color.PINK);
+		        	this.setBackground(yellow);
+		        }
+		        else if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Qualify)== 0) {
+		        	this.setBackground(lightGreen);
 		        }
 	        }
 	        this.setFont(table.getFont());

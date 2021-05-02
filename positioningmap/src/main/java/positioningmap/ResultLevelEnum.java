@@ -1,6 +1,6 @@
 package positioningmap;
 
 public enum ResultLevelEnum {
-	Critical, Warning, Qualify
+	Critical, Warning, Qualify, NotJudged
 
 }

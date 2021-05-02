@@ -129,7 +129,6 @@ public class Main {
 				UseCaseDef useCaseDef = pmdefs.get(filterContainer.getUseCaseName());
 				
 				return checkQualify(useCaseDef, specHolder, id);
-				//return false;
 			}
 			@Override
 			public Collection<String> vendors() {
@@ -162,6 +161,16 @@ public class Main {
 				filterContainer.setUseCaseFilter(b);
 				
 				updateModel(specSheet, model, true);
+			}
+
+			@Override
+			public String selectedUseCase() {
+				return filterContainer.getUseCaseName();
+			}
+
+			@Override
+			public boolean useCaseFilterEnabeld() {
+				return filterContainer.isUseCaseFilter();
 			}
 
 		};
@@ -349,14 +358,22 @@ public class Main {
 						return true;
 					}
 					System.out.println(productName);
-					for (Map.Entry<String, SpecHolder> entry : value.getValues().entrySet()) {
-						SpecHolder specHolder = entry.getValue();
-						String id = entry.getKey();
-						if (checkQualify(useCaseDef, specHolder, id) != ResultLevelEnum.Qualify) {
+					for (String id : specSheet.allIds()) {
+						SpecHolder specHolder = value.getValues().get(id);
+						if ((checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Critical) || 
+								(checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Warning)) {
 							return false;
 						}
-												
-					};
+					}
+//					for (Map.Entry<String, SpecHolder> entry : value.getValues().entrySet()) {
+//						SpecHolder specHolder = entry.getValue();
+//						String id = entry.getKey();
+//						if ((checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Critical) || 
+//								(checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Warning)) {
+//							return false;
+//						}
+//												
+//					};
 					return true;
 				}
 			});
@@ -536,8 +553,7 @@ public class Main {
 			failResult = ResultLevelEnum.Warning;
 		}
 		
-		if (useCaseDefE.getDefined() && 
-				((useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) || (useCaseDefE.getLevel().compareTo(Level.NiceToHave) == 0))) {
+		if (useCaseDefE.getDefined()) {
 			if (specHolder == null) {
 				return failResult;
 			}
@@ -606,6 +622,6 @@ public class Main {
 			}
 		}
 		
-		return ResultLevelEnum.Qualify;
+		return ResultLevelEnum.NotJudged;
 	}
 }

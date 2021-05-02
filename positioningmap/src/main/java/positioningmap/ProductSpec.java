@@ -13,17 +13,18 @@ import positioningmap.Main.SpecTypeEnum;
 
 public class ProductSpec implements Cloneable {
 
-	private String productName;
+//	@JsonIgnore
+//	private String productName;
 	private Map<String, SpecHolder> values = new HashMap<>();
 	private SpecInterface specInterface;
 	
-	public String getProductName() {
-		return productName;
-	}
-
-	public void setProductName(String productName) {
-		this.productName = productName;
-	}
+//	public String getProductName() {
+//		return productName;
+//	}
+//
+//	public void setProductName(String productName) {
+//		this.productName = productName;
+//	}
 
 	public Map<String, SpecHolder> getValues() {
 		return values;
@@ -35,8 +36,8 @@ public class ProductSpec implements Cloneable {
 
 	public ProductSpec() {}
 	
-	public ProductSpec(String productName, SpecInterface specInterface2) {
-		this.productName = productName;
+	public ProductSpec(/*String productName, */SpecInterface specInterface2) {
+//		this.productName = productName;
 		this.specInterface = specInterface2;
 	}
 
@@ -140,7 +141,7 @@ public class ProductSpec implements Cloneable {
 		try {
 			ProductSpec ret = (ProductSpec)super.clone();
 			ret.specInterface = this.specInterface;
-			ret.productName = new String(this.productName);
+//			ret.productName = new String(this.productName);
 		
 			ret.values = new LinkedHashMap<String, SpecHolder>();
 			for (Map.Entry<String, SpecHolder> entry: this.values.entrySet()) {

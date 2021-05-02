@@ -66,12 +66,15 @@ public class PositioningMapModel {
 		UseCaseDef usecaseDef = pmdefs.get(this.yAxisSpec);
 		List<String> targetIds = usecaseDef.getDefines();
 		List<String> targetSPecNames = new ArrayList<>();
+		List<SpecDef> targetSpecs = new ArrayList<>();
 		targetIds.forEach(t -> {
-			targetSPecNames.add(specSheet.find(t).getName()); 
+			SpecDef spec = specSheet.find(t);
+			targetSpecs.add(spec);
+			targetSPecNames.add(spec.getName()); 
 		});
 		yAxisTitle = targetSPecNames.toString();
 
-		ScoreCalculator calc = new ScoreCalculator(specSheet, targetSPecNames);
+		ScoreCalculator calc = new ScoreCalculator(specSheet, targetSpecs, usecaseDef);
 		
 		double xmaxMax = Double.NEGATIVE_INFINITY;
 		double xminMin = Double.POSITIVE_INFINITY;
@@ -79,13 +82,17 @@ public class PositioningMapModel {
 		double yminMin = Double.POSITIVE_INFINITY;
 		int j = 0;
 		for (String product : specSheet.products().keySet()) {
-			if (j++ > 5) {
-				break;
-			}
+//			if (j++ > 5) {
+//				break;
+//			}
 			Map<String, SpecHolder> values = specSheet.getProductSpecs().get(product).getValues();
 			
 			SpecHolder specX = values.get(specDefX.getId());
+			if (specX == null) {
+				continue;
+			}
 			SpecValue specValueX = getValue(specX);
+
 			double xmin = specValueX.getX();
 			double xmax = specValueX.getY();
 			xmaxMax = Math.max(Math.max(xmax, xmaxMax), xmin);
