@@ -140,7 +140,9 @@ class NullUseCaseDefElementListener implements UseCaseDefElementListener {
 class UseCaseDefElement {
 	enum Level {
 		Mandatory,
-		NiceToHave
+		High_Priority,
+		Middle_Priority,
+		Optional
 	}
 	private Boolean defined = false;
 	private Level level = Level.Mandatory;

@@ -1,14 +1,13 @@
 package positioningmap;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import positioningmap.Main.Better;
 import positioningmap.Main.SpecTypeEnum;
+import positioningmap.UseCaseDefElement.Level;
 
 interface ScoreCalculatorInterface {
 
@@ -25,6 +24,7 @@ interface ScoreCalculatorInterface {
 }
 public class ScoreCalculator {
 	private Map<String, CalcResult> result = new HashMap<>();
+	private CalcResult minMax;
 	
 	public ScoreCalculator(SpecSheet specSheet, List<SpecDef> targetSpecs, UseCaseDef usecaseDef) {
 		Map<String, CalcResult> valueRange = new HashMap<>();		
@@ -37,14 +37,56 @@ public class ScoreCalculator {
 			ProductSpec productSpec = entry.getValue();
 			boolean target = true;
 			for (SpecDef specDef : targetSpecs) {
-				if (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
-					SpecHolder specHolder = productSpec.getValues().get(specDef.id());
-					if (!specHolder.getGuarantee().getAvailable()) {
-						notSatistiedProducts.add(productName);
-						target = false;
-						break;
+				UseCaseDefElement useCaseDefElement = usecaseDef.value(specDef.getId());
+				boolean enabled = new SpecTypeBranch(specDef, specValue(specDef, productSpec)) {
+
+					@Override
+					protected boolean onVaridation(SpecValue specValue2) {
+						// TODO Auto-generated method stub
+						return true;
 					}
-				}				
+
+					@Override
+					protected boolean onChoice(SpecValue specValue2) {
+						// TODO Auto-generated method stub
+						return true;
+					}
+
+					@Override
+					protected boolean onRange(SpecValue specValue2) {
+						// TODO Auto-generated method stub
+						return true;
+					}
+
+					@Override
+					protected boolean onNumeric(SpecValue specValue2) {
+						// TODO Auto-generated method stub
+						return true;
+					}
+
+					@Override
+					protected boolean onBoolean(SpecValue specValue2) {
+						if (!specValue2.getAvailable()) {
+							notSatistiedProducts.add(productName);
+							return false;
+						}
+						return true;
+					}
+					
+				}.branch();
+				
+				if (!enabled) {
+					target = false;
+					break;
+				}
+//				if (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
+//					SpecHolder specHolder = productSpec.getValues().get(specDef.id());
+//					if (!specHolder.getGuarantee().getAvailable()) {
+//						notSatistiedProducts.add(productName);
+//						target = false;
+//						break;
+//					}
+//				}				
 			}
 			if (target) {
 				targetProducts.put(productName, productSpec);
@@ -52,11 +94,15 @@ public class ScoreCalculator {
 		}
 				
 		try {
-			Map<String, Double> scores = new HashMap<>();
-			CalcResult minMax = calcNew(specSheet, targetSpecs, usecaseDef, valueRange, targetProducts, scores);
-			
+			Map<String, CalcResult> scores = new HashMap<>();
+			minMax = calcNew(specSheet, targetSpecs, usecaseDef, valueRange, targetProducts, scores);
+			minMax.symmetric();
 			scores.forEach((productName, value) -> {
-				result.put(productName, new CalcResult(value - minMax.range()/50, value + minMax.range()/50));
+				CalcResult mm = scores.get(productName);
+				mm.min = mm.getSum() - minMax.range()/30.0;
+				mm.max = mm.getSum() + minMax.range()/30.0;
+				result.put(productName, mm);
+				//result.put(productName, scores.get(productName));
 			});
 			
 		} catch (Exception e) {
@@ -66,45 +112,62 @@ public class ScoreCalculator {
 	}
 
 	private CalcResult calcNew(SpecSheet specSheet, List<SpecDef> targetSpecs, UseCaseDef usecaseDef,
-			Map<String, CalcResult> valueRange, Map<String, ProductSpec> targetProducts, Map<String, Double> scores) throws Exception {
+			Map<String, CalcResult> valueRange, Map<String, ProductSpec> targetProducts, Map<String, CalcResult> scores) throws Exception {
 		
 //		Map<ProductSpec, Double> ret = new HashMap<>();
-		CalcResult minMax = new CalcResult();
+		CalcResult localMinMax = new CalcResult();
 		for (String productName : targetProducts.keySet()) {
 			ProductSpec productSpec = targetProducts.get(productName); 
 			double sum = 0;
+			CalcResult mm = new CalcResult();
 			for (SpecDef specDef : targetSpecs) {
-				SpecHolder specHolder = productSpec.getValues().get(specDef.getId());
-				if (specHolder == null) {
+				
+//				SpecHolder specHolder = productSpec.getValues().get(specDef.getId());
+//				if (specHolder == null) {
+//					System.out.println(productName + "::calcNew::" + specDef.getName() + " is null");
+//					continue;
+//				}
+//				SpecValue specValue = specHolder.getGuarantee();
+				SpecValue specValue = specValue(specDef, productSpec);
+				if (specValue == null) {
 					System.out.println(productName + "::calcNew::" + specDef.getName() + " is null");
 					continue;
-				}
-				SpecValue specValue = specHolder.getGuarantee();
-				if ((specValue == null) || !specValue.getDefined()) {
-					specValue = specHolder.getTypical();
 				}
 				if (!specValue.getDefined()) {
 					throw new Exception();
 				}
 				UseCaseDefElement useCaseDefElement = usecaseDef.value(specDef.getId());
-				double result  = calcScore(specDef, specHolder, useCaseDefElement);
-				sum += result;
+				double score  = calcScore(specDef, specValue, useCaseDefElement);
+				System.out.println("SCORE:" + productName.replace("\n", "") + "." + specDef.getName() + " = " + score);
+				sum += score;
+				mm.setValue(score);
 			}
-			minMax.setValue(sum);
-			scores.put(productName, sum);
+			localMinMax.setValue(sum);
+//			mm.max = sum;
+			scores.put(productName, mm);
 		}
 		
-		return minMax;
+		return localMinMax;
 	}
-	class DoubleWrapper {
-		public double value = 0.0;
-	}
-	private double calcScore(SpecDef specDef, SpecHolder specHolder, UseCaseDefElement useCaseDefElement) {
-		DoubleWrapper ret = new DoubleWrapper();
+	private SpecValue specValue(SpecDef specDef, ProductSpec productSpec) {
+		SpecHolder specHolder = productSpec.getValues().get(specDef.getId());
+		if (specHolder == null) {
+//			System.out.println(productName + "::calcNew::" + specDef.getName() + " is null");
+			return null;
+		}
 		SpecValue specValue = specHolder.getGuarantee();
 		if ((specValue == null) || !specValue.getDefined()) {
 			specValue = specHolder.getTypical();
 		}
+		return specValue;
+	}
+	
+	class DoubleWrapper {
+		public double value = 0.0;
+	}
+	private double calcScore(SpecDef specDef, SpecValue specValue, UseCaseDefElement useCaseDefElement) {
+		DoubleWrapper ret = new DoubleWrapper();
+
 		new SpecTypeBranch(specDef, specValue) {
 			@Override
 			protected boolean onVaridation(SpecValue specValue2) {
@@ -189,7 +252,7 @@ public class ScoreCalculator {
 					@Override
 					protected boolean onLower(SpecValue specValue2) {
 						double value = (specValue2.getX() - useCaseDefElement.getThreshold()) / useCaseDefElement.getThreshold();
-						result.value = value;
+						result.value = -value;
 						return specValue2.getX() < useCaseDefElement.getThreshold();
 					}
 
@@ -209,7 +272,21 @@ public class ScoreCalculator {
 			}
 			
 		}.branch();
-		return ret.value;
+		
+		double mag = 0.0;
+		if (useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) {
+			mag = 1.0;
+		}
+		else if (useCaseDefElement.getLevel().compareTo(Level.High_Priority) == 0) {
+			mag = 0.8;
+		}
+		else if (useCaseDefElement.getLevel().compareTo(Level.Middle_Priority) == 0) {
+			mag = 0.4;
+		}
+		else if (useCaseDefElement.getLevel().compareTo(Level.Optional) == 0) {
+			mag = 0.1;
+		}
+		return ret.value * mag;
 	}
 	
 	private void calcOld(SpecSheet specSheet, List<SpecDef> targetSpecs, UseCaseDef usecaseDef,
@@ -414,13 +491,24 @@ public class ScoreCalculator {
 		return result.get(product);
 	}
 
+	public CalcResult minMax() {
+		return this.minMax;
+	}
+
+
 }
 class CalcResult {
 	public double min = Double.POSITIVE_INFINITY;
 	public double max = Double.NEGATIVE_INFINITY;
-	
+	public double sum = 0;
 	public CalcResult() {}
 	
+	public void symmetric() {
+		double abs = Math.max(Math.abs(min), Math.abs(max));
+		this.min = -abs;
+		this.max = abs;
+	}
+
 	public CalcResult(double min, double max) {
 		this.min = min;
 		this.max = max;
@@ -432,6 +520,7 @@ class CalcResult {
 		if ((value != Double.POSITIVE_INFINITY) && (value != Double.NEGATIVE_INFINITY)) {
 			this.min = Math.min(value, min);
 			this.max = Math.max(value, max);
+			this.sum += value;
 		}
 		else {
 			System.err.println(this.getClass().getName() + " Invalid Value");
@@ -449,6 +538,10 @@ class CalcResult {
 		if (ref.max != Double.NEGATIVE_INFINITY) {
 			this.max = Math.max(ref.max, this.max);
 		}
+	}
+
+	public double getSum() {
+		return sum;
 	}
 	
 }

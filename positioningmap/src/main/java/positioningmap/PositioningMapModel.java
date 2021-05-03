@@ -157,6 +157,9 @@ public class PositioningMapModel {
 		double m = 0.1;
 		xmaxMax = xmaxMax + (xmaxMax - xminMin) * m;
 		xminMin = xminMin - (xmaxMax - xminMin) * m;
+		
+		ymaxMax = calc.minMax().max;
+		yminMin = calc.minMax().min;
 		ymaxMax = ymaxMax + (ymaxMax - yminMin) * m;
 		yminMin = yminMin - (ymaxMax - yminMin) * m;		
 		

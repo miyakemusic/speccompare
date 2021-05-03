@@ -549,7 +549,7 @@ public class Main {
 		if (useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) {
 			failResult = ResultLevelEnum.Critical;
 		}
-		else if (useCaseDefE.getLevel().compareTo(Level.NiceToHave) == 0) {
+		else {
 			failResult = ResultLevelEnum.Warning;
 		}
 		
