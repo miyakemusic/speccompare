@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import positioningmap.Main.Better;
 import positioningmap.Main.SpecTypeEnum;
 import positioningmap.UseCaseDefElement.Level;
 
@@ -30,7 +31,7 @@ public class ScoreCalculator {
 		Map<String, CalcResult> valueRange = new HashMap<>();		
 		// At first target product should be filtered. 
 		// Product does not satisfy mandatory requirements should be removed
-		Set<String> notSatistiedProducts = new HashSet<>();
+//		Set<String> notSatistiedProducts = new HashSet<>();
 		Map<String, ProductSpec> targetProducts = new HashMap<>();
 		for (Map.Entry<String, ProductSpec> entry : specSheet.getProductSpecs().entrySet()) {
 			String productName = entry.getKey();
@@ -38,11 +39,27 @@ public class ScoreCalculator {
 			boolean target = true;
 			for (SpecDef specDef : targetSpecs) {
 				UseCaseDefElement useCaseDefElement = usecaseDef.value(specDef.getId());
-				boolean enabled = new SpecTypeBranch(specDef, specValue(specDef, productSpec)) {
+				SpecValue specValue = specValue(specDef, productSpec);
+				if (specValue == null ) {
+//					notSatistiedProducts.add(productName);
+					continue;
+				}
+				boolean enabled = new SpecTypeBranch(specDef, specValue) {
 
 					@Override
 					protected boolean onVaridation(SpecValue specValue2) {
-						// TODO Auto-generated method stub
+						if (useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) {
+							if (specDef.getBetter().compareTo(Better.Higher) == 0) {
+								if (useCaseDefElement.getThreshold() > specValue2.getX()) {
+									return false;
+								}
+							}
+							else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
+								if (useCaseDefElement.getThreshold() < specValue2.getX()) {
+									return false;
+								}								
+							}
+						}
 						return true;
 					}
 
@@ -60,16 +77,29 @@ public class ScoreCalculator {
 
 					@Override
 					protected boolean onNumeric(SpecValue specValue2) {
-						// TODO Auto-generated method stub
+						if (useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) {
+							if (specDef.getBetter().compareTo(Better.Higher) == 0) {
+								if (useCaseDefElement.getThreshold() > specValue2.getX()) {
+									return false;
+								}
+							}
+							else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
+								if (useCaseDefElement.getThreshold() < specValue2.getX()) {
+									return false;
+								}								
+							}
+						}
 						return true;
 					}
 
 					@Override
 					protected boolean onBoolean(SpecValue specValue2) {
-						if (!specValue2.getAvailable()) {
-							notSatistiedProducts.add(productName);
-							return false;
+						if (useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) {
+							if (!specValue2.getAvailable()) {
+								return false;
+							}							
 						}
+
 						return true;
 					}
 					
