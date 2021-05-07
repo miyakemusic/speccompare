@@ -11,6 +11,12 @@ import java.util.Map;
 import positioningmap.Main.Better;
 import positioningmap.Main.SpecTypeEnum;
 
+interface PositioningMapModelListener {
+
+	void onUpdate();
+	
+	
+};
 public class PositioningMapModel {
 	private static final int LABEL_COUNT = 9;
 	private List<PositioningMapElement> elements = new ArrayList<>();
@@ -50,7 +56,8 @@ public class PositioningMapModel {
 		
 	}
 	
-	private NumberFormat formatter = new DecimalFormat("#0.00"); 
+	private NumberFormat formatter = new DecimalFormat("#0.00");
+	private PositioningMapModelListener listener; 
 	private void createData() {
 
 		xlabels.clear();
@@ -154,7 +161,7 @@ public class PositioningMapModel {
 			elements.add(e);
 		}
 
-		double m = 0.1;
+		double m = 0.0;
 		xmaxMax = xmaxMax + (xmaxMax - xminMin) * m;
 		xminMin = xminMin - (xmaxMax - xminMin) * m;
 		
@@ -177,6 +184,10 @@ public class PositioningMapModel {
 			
 			double y = yminMin + yspan/ (double)(LABEL_COUNT-1) * (LABEL_COUNT-i-1);
 			ylabels.add(formatter.format(y));
+		}
+		
+		if (listener != null) {
+			listener.onUpdate();
 		}
 	}
 
@@ -261,5 +272,13 @@ public class PositioningMapModel {
 	public void setUseCase(String specname) {
 		this.yAxisSpec = specname;
 		createData();
+	}
+
+	public void update() {
+		this.createData();
+	}
+
+	public void setListener(PositioningMapModelListener positioningMapModelListener) {
+		this.listener = positioningMapModelListener;
 	}
 }

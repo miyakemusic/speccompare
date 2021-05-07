@@ -34,7 +34,7 @@ public class Main {
 
 	public enum Better {
 		Higher,
-		Lower, Wider, Narrower, None
+		Lower, Closer,Wider, Narrower, None
 	}
 	
 	public enum SpecTypeEnum {
@@ -55,6 +55,8 @@ public class Main {
 	private SpecSheet specSheet = new SpecSheet("OTDR");
 	private UseCaseContainer pmdefs = new UseCaseContainer();
 	protected FilterContainer filterContainer = new FilterContainer();
+	protected PositioningMapUi positioningMapUi;
+	private PositioningMapModel positioningMapModel;
 	public Main() {
 		
 //		createDemo();
@@ -292,7 +294,10 @@ public class Main {
 
 			@Override
 			void onPositioningMap() {
-				new PositioningMapUi(new PositioningMapModel(specSheet, pmdefs)).setVisible(true);
+				if (positioningMapUi == null) {
+					positioningMapUi = new PositioningMapUi(positioningMapModel = new PositioningMapModel(specSheet, pmdefs));
+				}
+				positioningMapUi.setVisible(true);
 			}
 
 			@Override
@@ -305,12 +310,11 @@ public class Main {
 			@Override
 			void onConifgPositioningMap() {
 				UseCaseConfigUi ui = new UseCaseConfigUi(specSheet, pmdefs) {
-
 					@Override
 					protected void save() {
 						saveUseSaveConfig();
+						positioningMapModel.update();
 					}
-					
 				};
 				ui.setVisible(true);
 			}
@@ -440,7 +444,9 @@ public class Main {
 		else {
 			model.fireTableDataChanged();
 		}
-
+		if (positioningMapModel != null) {
+			positioningMapModel.update();
+		}
 	}
 
 	private void createDemo() {
@@ -546,7 +552,7 @@ public class Main {
 	private ResultLevelEnum checkQualify(UseCaseDef useCaseDef, SpecHolder specHolder, String id) {
 		UseCaseDefElement useCaseDefE = useCaseDef.value(id);
 		ResultLevelEnum failResult = null;
-		if (useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) {
+		if ((useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) || (specHolder == null)) {
 			failResult = ResultLevelEnum.Critical;
 		}
 		else {
@@ -565,63 +571,72 @@ public class Main {
 			if (specDef == null) {
 				System.out.println();
 			}
-			
-			boolean ret = new SpecTypeBranch(specDef, specValue) {
 
-				@Override
-				protected boolean onVaridation(SpecValue specValue2) {
-					return judge(useCaseDefE, specDef, specValue2);
-				}
-
-				private boolean judge(UseCaseDefElement useCaseDefE, SpecDef specDef, SpecValue specValue2) {
-					if (specDef.getBetter().compareTo(Better.Higher) == 0) {
-						return useCaseDefE.getThreshold() <= specValue2.getX();
-					}
-					else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
-						return useCaseDefE.getThreshold() >= specValue2.getX();
-					}
-					
-					return false;
-				}
-
-				@Override
-				protected boolean onChoice(SpecValue specValue2) {
-					// TODO Auto-generated method stub
-					return false;
-				}
-
-				@Override
-				protected boolean onRange(SpecValue specValue2) {
-					// TODO Auto-generated method stub
-					return false;
-				}
-
-				@Override
-				protected boolean onNumeric(SpecValue specValue2) {
-					return judge(useCaseDefE, specDef, specValue2);
-				}
-
-				@Override
-				protected boolean onBoolean(SpecValue specValue2) {
-					if (!specValue2.getDefined()) {
-						return false;
-					}
-					if (!specValue2.getAvailable()) {
-						return false;
-					}
-					return true;
-				}
-				
-			}.branch();
-			
-			if (!ret) {
-				return failResult;
-			}
-			else {
+			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specValue, useCaseDefE);
+			if (ret.value >= 0.0) {
 				return ResultLevelEnum.Qualify;
 			}
+			else {
+				return failResult;
+			}
 		}
-		
-		return ResultLevelEnum.NotJudged;
+		return failResult.NotJudged;
+//			boolean ret = new SpecTypeBranch(specDef, specValue) {
+//
+//				@Override
+//				protected boolean onVaridation(SpecValue specValue2) {
+//					return judge(useCaseDefE, specDef, specValue2);
+//				}
+//
+//				private boolean judge(UseCaseDefElement useCaseDefE, SpecDef specDef, SpecValue specValue2) {
+//					if (specDef.getBetter().compareTo(Better.Higher) == 0) {
+//						return useCaseDefE.getThreshold() <= specValue2.getX();
+//					}
+//					else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
+//						return useCaseDefE.getThreshold() >= specValue2.getX();
+//					}
+//					
+//					return false;
+//				}
+//
+//				@Override
+//				protected boolean onChoice(SpecValue specValue2) {
+//					// TODO Auto-generated method stub
+//					return false;
+//				}
+//
+//				@Override
+//				protected boolean onRange(SpecValue specValue2) {
+//					// TODO Auto-generated method stub
+//					return false;
+//				}
+//
+//				@Override
+//				protected boolean onNumeric(SpecValue specValue2) {
+//					return judge(useCaseDefE, specDef, specValue2);
+//				}
+//
+//				@Override
+//				protected boolean onBoolean(SpecValue specValue2) {
+//					if (!specValue2.getDefined()) {
+//						return false;
+//					}
+//					if (!specValue2.getAvailable()) {
+//						return false;
+//					}
+//					return true;
+//				}
+//				
+//			}.branch();
+//			
+//			if (!ret) {
+//				return failResult;
+//			}
+//			else {
+//				return ResultLevelEnum.Qualify;
+//			}
+//		}
+//		
+//		return ResultLevelEnum.NotJudged;
 	}
 }

@@ -19,7 +19,7 @@ public class SpecValue implements Cloneable {
 
 	public SpecValue(boolean available1) {
 		this.available = available1;
-		this.defined = available1;
+		this.defined = true;
 	}
 
 	public SpecValue(double v) {
@@ -44,11 +44,11 @@ public class SpecValue implements Cloneable {
 				ret += " x " + String.valueOf(y);
 			}
 		}
-		else if (this.available) {
-			ret  = "Yes";
-		}
 		else if (!this.string.isEmpty()) {
 			ret = this.string;
+		}
+		else if (this.available) {
+			ret  = "Yes";
 		}
 		else {
 			ret = "No";
@@ -69,8 +69,10 @@ public class SpecValue implements Cloneable {
 	}
 
 	public void setAvailable(Boolean available) {
-		this.available = available;
-		this.defined = available;
+//		if (this.available != available) {
+			this.available = available;
+			this.defined = true;
+//		}
 	}
 
 	public String getString() {
@@ -88,8 +90,10 @@ public class SpecValue implements Cloneable {
 	}
 
 	public void setX(Double x) {
-		this.x = x;
-		updateDefined();
+		if (this.x != x) {
+			this.x = x;
+			updateDefined();
+		}
 	}
 
 	private void updateDefined() {
@@ -102,8 +106,10 @@ public class SpecValue implements Cloneable {
 	}
 
 	public void setY(Double y) {
-		this.y = y;
-		updateDefined();
+		if (this.y != y) {
+			this.y = y;
+			updateDefined();
+		}
 	}
 
 	public Boolean getDefined() {

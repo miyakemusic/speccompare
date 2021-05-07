@@ -13,7 +13,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.font.TextAttribute;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
@@ -22,14 +26,25 @@ import javax.swing.JPanel;
 
 public class PositioningMapUi extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private PositioningMapModel positioningMapModel;
+	protected Component canvas;
 
 
 	public PositioningMapUi(PositioningMapModel positioningMapModel) {
 		this.setSize(new Dimension(1000, 800));
 		this.getContentPane().setLayout(new BorderLayout());
 		
-		MyCanvas canvas;
+		positioningMapModel.setListener(new PositioningMapModelListener() {
+			@Override
+			public void onUpdate() {
+				canvas.repaint();
+			}
+		});
+		
 		this.getContentPane().add(canvas = new MyCanvas(), BorderLayout.CENTER);
 		
 		this.positioningMapModel = positioningMapModel;
@@ -50,23 +65,23 @@ public class PositioningMapUi extends JFrame {
 			@Override
 			public void onChange(String category, String specname) {
 				positioningMapModel.setX(category, specname);
-				canvas.repaint(1000);
+			//	canvas.repaint();
 			}
 		}));
 		
-		toolBar.add(createCombo("Y", positioningMapModel.getSpecList(), new MyComboListener() {
-			@Override
-			public void onChange(String category, String specname) {
-				positioningMapModel.setY(category, specname);
-				canvas.repaint();
-			}
-		}));
+//		toolBar.add(createCombo("Y", positioningMapModel.getSpecList(), new MyComboListener() {
+//			@Override
+//			public void onChange(String category, String specname) {
+//				positioningMapModel.setY(category, specname);
+//			//	canvas.repaint();
+//			}
+//		}));
 		
-		toolBar.add(createCombo("Use Case", positioningMapModel.getUseCases(), new MyComboListener() {
+		toolBar.add(createCombo("Y", positioningMapModel.getUseCases(), new MyComboListener() {
 			@Override
 			public void onChange(String category, String specname) {
 				positioningMapModel.setUseCase(specname);
-				canvas.repaint();
+			//	canvas.repaint();
 			}
 		}));
 	}
@@ -167,12 +182,18 @@ public class PositioningMapUi extends JFrame {
 				g.drawString(label, MyCanvas.this.getWidth()/2, y + yoffset);
 			}
 			
-			Font font = new Font(this.getFont().getFontName(), Font.BOLD, this.getFont().getSize());
-			g.setFont(font);
+			Font boldFont = new Font(this.getFont().getFontName(), Font.BOLD, this.getFont().getSize());
+			Map<TextAttribute, Integer> fontAttributes = new HashMap<TextAttribute, Integer>();
+			fontAttributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+			Font boldUnderlinedFont = new Font(this.getFont().getFontName(), Font.PLAIN, this.getFont().getSize()).deriveFont(fontAttributes);
+			
+			g.setFont(boldFont);
 			g.drawString(positioningMapModel.xAxisTitle(), 0, MyCanvas.this.getHeight()/2 - 5);
 			String xlabel = positioningMapModel.yAxisTitle();
 			g.drawString(xlabel, MyCanvas.this.getWidth()/2 - g.getFontMetrics().stringWidth(xlabel), getFont().getSize());
 			g.setFont(this.getFont());
+			
+			List<Font> fonts = Arrays.asList(boldUnderlinedFont, getFont(), boldFont);
 			
 			for (PositioningMapElement e : positioningMapModel.elements()) {
 				//g.setColor(Color.YELLOW);
@@ -185,9 +206,12 @@ public class PositioningMapUi extends JFrame {
 				
 				int yoffset = (int)( (double)e.height() / (double)text.length);
 				int xoffset = 0;
+//				g.setFont(boldFont);
 				for (int i = 0; i < text.length; i++) {
+					g.setFont(fonts.get(i));
 					g.drawString(text[i], xoffset + e.x() + (e.width() - g.getFontMetrics().stringWidth(text[i])) /2, e.y() + yoffset + + this.getFont().getSize()* i);
 				}
+				g.setFont(getFont());
 			}
 		}
 		

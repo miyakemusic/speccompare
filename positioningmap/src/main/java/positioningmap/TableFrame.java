@@ -3,6 +3,7 @@ package positioningmap;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -122,6 +123,8 @@ public abstract class TableFrame extends JFrame {
 	private TableFrameInterface tableFrameInterface;
 	protected int currentRow = 0;
 	protected int currentColumn = 0;
+	private ValueEditor valueEditorDialog;
+	private SpecDefEditor defEditorDialog;
 	
 	public TableFrame(AbstractTableModel model, TableFrameInterface tableFrameInterface) {
 		this.tableFrameInterface = tableFrameInterface;
@@ -498,10 +501,12 @@ public abstract class TableFrame extends JFrame {
 		return menuItem;
 	}
 	protected void showValueEditor(String model, SpecDef specDef, SpecHolder specValue) {
-		ValueEditor dialog = new ValueEditor(this, model, specDef, specValue);
-		dialog.setModal(true);
-		dialog.setVisible(true);
-		if (dialog.ok()) {
+//		if (valueEditorDialog == null) {
+			valueEditorDialog = new ValueEditor(this, model, specDef, specValue);
+			valueEditorDialog.setModal(true);
+//		}
+		valueEditorDialog.setVisible(true);
+		if (valueEditorDialog.ok()) {
 			onUpdate();
 		}
 	}
@@ -521,13 +526,15 @@ public abstract class TableFrame extends JFrame {
 
 	}
 	private void showDefEditor(SpecDef spedDef, TableFrameInterface tableFrameInterface) {
-		SpecDefEditor dialog = new SpecDefEditor(this, spedDef, 
-				tableFrameInterface.categories(), 
-				tableFrameInterface.units(),
-				tableFrameInterface.parents());
-		dialog.setModal(true);
-		dialog.setVisible(true);
-		if (dialog.ok()) {
+//		if (defEditorDialog == null) {
+			defEditorDialog = new SpecDefEditor(this, spedDef, 
+					tableFrameInterface.categories(), 
+					tableFrameInterface.units(),
+					tableFrameInterface.parents());
+			defEditorDialog.setModal(true);
+//		}
+		defEditorDialog.setVisible(true);
+		if (defEditorDialog.ok()) {
 			onUpdate();
 		}
 	}
@@ -559,16 +566,17 @@ public abstract class TableFrame extends JFrame {
 	        }
 	         	        
 	        if (column >= 2) {
+	        	ResultLevelEnum resultLevelEnum = tableFrameInterface.qualified(row, table.getColumnName(column));
 		        if (!tableFrameInterface.isEnabled(row, table.getColumnName(column)) ) {
 		        	this.setBackground(gray);
 		        }
-		        if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Critical)== 0) {
+		        if (resultLevelEnum.compareTo(ResultLevelEnum.Critical)== 0) {
 		        	this.setBackground(Color.RED);
 		        }
-		        else if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Warning)== 0) {
+		        else if (resultLevelEnum.compareTo(ResultLevelEnum.Warning)== 0) {
 		        	this.setBackground(yellow);
 		        }
-		        else if (tableFrameInterface.qualified(row, table.getColumnName(column)).compareTo(ResultLevelEnum.Qualify)== 0) {
+		        else if (resultLevelEnum.compareTo(ResultLevelEnum.Qualify)== 0) {
 		        	this.setBackground(lightGreen);
 		        }
 	        }

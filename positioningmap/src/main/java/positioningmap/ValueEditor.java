@@ -54,16 +54,16 @@ public class ValueEditor extends JDialog {
 		base.add(guarantee);	
 		guarantee.setLayout(new FlowLayout());
 		guarantee.setBorder(new TitledBorder("Guarantee"));
-
-		JPanel typical = new JPanel();
-		base.add(typical);	
-		typical.setLayout(new FlowLayout());
-		typical.setBorder(new TitledBorder("Typical"));
-		
 		createArea(specDef, specHolder.getGuarantee(), guarantee);
-		createArea(specDef, specHolder.getTypical(), typical);
 		
-//		JFrame frame = new JFrame();
+		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.Range) == 0)
+				|| (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
+			JPanel typical = new JPanel();
+			base.add(typical);	
+			typical.setLayout(new FlowLayout());
+			typical.setBorder(new TitledBorder("Typical"));
+			createArea(specDef, specHolder.getTypical(), typical);
+		}
 
 		JPanel control = new JPanel();
 		this.getContentPane().add(control, BorderLayout.SOUTH);
