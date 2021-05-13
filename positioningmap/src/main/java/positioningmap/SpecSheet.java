@@ -281,7 +281,7 @@ public class SpecSheet {
 			}
 		}
 	}
-
+	
 	public void copySpec(String category, String id) {
 		for (Map.Entry<String, SpecDef> entry : categories.get(category).getSpecs().entrySet()) {
 			if (entry.getValue().getId().equals(id)) {
@@ -333,6 +333,11 @@ public class SpecSheet {
 	public Collection<? extends String> categories() {
 		return this.categories.keySet();
 	}
+
+	public void clearValue(String id, String model) {
+		this.getValue(id, model).clearValue();
+	}
+
 
 }
 interface SpecInterface {

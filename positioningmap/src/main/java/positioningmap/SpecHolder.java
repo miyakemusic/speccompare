@@ -34,4 +34,9 @@ public class SpecHolder implements Cloneable {
 		}
 		return null;
 	}
+
+	public void clearValue() {
+		this.guarantee.clear();
+		this.typical.clear();
+	}
 }

@@ -1,5 +1,8 @@
 package positioningmap;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class SpecValue implements Cloneable {
 
 	public static final String INITIAL_VALUE = "-Infinity";
@@ -9,6 +12,8 @@ public class SpecValue implements Cloneable {
 	private Boolean available = false;
 	private String string = "";
 	private Boolean defined = false;
+	private List<String> multiple = new ArrayList<>();
+	
 	public SpecValue() {}
 	
 	public SpecValue(double x1, double y1) {
@@ -43,6 +48,12 @@ public class SpecValue implements Cloneable {
 			if (this.y != Double.NEGATIVE_INFINITY) {
 				ret += " x " + String.valueOf(y);
 			}
+		}
+		else if (this.multiple.size() > 0) {
+			for (String s: multiple) {
+				ret += s + ",";
+			}
+			ret = ret.substring(0, ret.length()-1);
 		}
 		else if (!this.string.isEmpty()) {
 			ret = this.string;
@@ -120,6 +131,15 @@ public class SpecValue implements Cloneable {
 		this.defined = defined;
 	}
 
+	
+	public List<String> getMultiple() {
+		return multiple;
+	}
+
+	public void setMultiple(List<String> multiple) {
+		this.multiple = multiple;
+	}
+
 	@Override
 	public SpecValue clone() {
 		try {
@@ -136,6 +156,15 @@ public class SpecValue implements Cloneable {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public void clear() {
+		x = Double.NEGATIVE_INFINITY;
+		y = Double.NEGATIVE_INFINITY;
+		available = false;
+		string = "";
+		defined = false;
+		this.multiple.clear();
 	}
 	
 }

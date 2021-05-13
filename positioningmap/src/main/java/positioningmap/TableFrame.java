@@ -3,6 +3,7 @@ package positioningmap;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Desktop;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -18,6 +19,8 @@ import java.beans.PropertyChangeListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -113,6 +116,7 @@ public abstract class TableFrame extends JFrame {
 	abstract void copyCells(int[] fromRows, String fromColumn, String toColumn);
 	abstract void delete(int row);
 	abstract void copySpec(int row);
+	abstract void clearValue(int[] row, int[] columns);
 	abstract void onPositioningMap();
 	abstract void onConifgPositioningMap();
 	
@@ -357,6 +361,12 @@ public abstract class TableFrame extends JFrame {
 				copySpec(table.getSelectedRow());
 			}
 		}));
+		popup.add(createMenuItem("Clear", new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				clearValue(table.getSelectedRows(), table.getSelectedColumns());
+			}
+		}));
 		
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setCellSelectionEnabled(true);
@@ -376,6 +386,20 @@ public abstract class TableFrame extends JFrame {
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2) {
 					doEdit(table, tableFrameInterface);
+				}
+				else if (e.getClickCount() == 1) {
+					String val = table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()).toString();
+					if (val != null && val.startsWith("http")) {
+						try {
+							Desktop.getDesktop().browse(new URI(val));
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						} catch (URISyntaxException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
 				}
 			}
 		});

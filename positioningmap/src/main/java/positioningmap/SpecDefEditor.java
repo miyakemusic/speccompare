@@ -35,6 +35,7 @@ public class SpecDefEditor extends JDialog {
 		panel.add(inputs.createEditableCombo("unit", units));
 		panel.add(inputs.createWidget("specType"));
 		panel.add(inputs.createWidget("better"));
+		panel.add(inputs.createConfigList("choices", specDef.getChoices()));
 		
 //		panel.add(inputs.createEditableCombo("parentId", parents));
 		JPanel p = new JPanel();

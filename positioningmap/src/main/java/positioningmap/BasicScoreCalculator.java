@@ -47,7 +47,17 @@ public class BasicScoreCalculator {
 				return new BetterBranch(specDef, specValue2) {
 					@Override
 					protected boolean onWilder(SpecValue specValue2) {
-						double width = specValue2.getY() - specValue2.getX();
+						double center = (useCaseDefElement.getThreshold() + useCaseDefElement.getThresholdY()) / 2.0;
+						double halfSpan = (useCaseDefElement.getThresholdY() - useCaseDefElement.getThreshold()) / 2.0;
+						
+						double denominator = center;
+						if (denominator == 0.0) {
+							denominator = Math.abs(useCaseDefElement.getThreshold());
+						}
+						double value = (Math.abs(specValue2.getX() - center) - halfSpan) / denominator;
+						double valueY = (Math.abs(specValue2.getY() - center) - halfSpan) / denominator;
+						
+						ret.value = Math.min(value, valueY);
 						return false;
 					}
 
@@ -108,7 +118,11 @@ public class BasicScoreCalculator {
 
 					@Override
 					protected boolean onLower(SpecValue specValue2) {
-						double value = (specValue2.getX() - useCaseDefElement.getThreshold()) / useCaseDefElement.getThreshold();
+						double denominator = useCaseDefElement.getThreshold();
+						if (denominator == 0.0) {
+							denominator = Math.abs(specValue2.getX());
+						}
+						double value = (specValue2.getX() - useCaseDefElement.getThreshold()) / denominator;
 						result.value = -value;
 						return specValue2.getX() < useCaseDefElement.getThreshold();
 					}
@@ -119,6 +133,43 @@ public class BasicScoreCalculator {
 						result.value = value;
 						return specValue2.getX() > useCaseDefElement.getThreshold();
 					}
+				}.branch();
+			}
+
+			@Override
+			protected boolean onTwoDimensional(SpecValue specValue2) {
+				return new BetterBranch(specDef, specValue2) {
+
+					@Override
+					protected boolean onWilder(SpecValue specValue2) {
+						double denominator = Math.abs(useCaseDefElement.getThreshold());
+						if (denominator == 0.0) {
+							denominator = Math.abs(specValue2.getX());
+						}
+						double value = (specValue2.getX() - useCaseDefElement.getThreshold()) / denominator;
+						double valueY = (specValue2.getY() - useCaseDefElement.getThresholdY()) / denominator;
+						ret.value = value + valueY;
+						return false;
+					}
+
+					@Override
+					protected boolean onNarrower(SpecValue specValue2) {
+						// TODO Auto-generated method stub
+						return false;
+					}
+
+					@Override
+					protected boolean onLower(SpecValue specValue2) {
+						// TODO Auto-generated method stub
+						return false;
+					}
+
+					@Override
+					protected boolean onHigher(SpecValue specValue2) {
+						// TODO Auto-generated method stub
+						return false;
+					}
+					
 				}.branch();
 			}			
 		}.branch();

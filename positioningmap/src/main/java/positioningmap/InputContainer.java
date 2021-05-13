@@ -3,13 +3,17 @@ package positioningmap;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -41,7 +45,7 @@ public class InputContainer {
 		public MyPanel(String fieldName) {
 			try {
 				JPanel panel = this;
-				panel.setPreferredSize(new Dimension(300, 30));
+				panel.setPreferredSize(new Dimension(400, 30));
 				String capital = toCaptal(fieldName);
 				
 				panel.add(new JLabel(capital));
@@ -199,6 +203,13 @@ public class InputContainer {
 						Enum<?> v = Enum.valueOf(type, combo.getSelectedItem().toString());
 						method.invoke(object, v);
 					}
+					else if (type.equals(List.class)) {
+						List<String> list = new ArrayList<>();
+						for (int i = 0; i < combo.getItemCount(); i++) {
+							list.add(combo.getItemAt(i).toString());
+						}
+						method.invoke(object, list);
+					}
 					else {
 						method.invoke(object, combo.getSelectedItem().toString());
 					}
@@ -229,6 +240,41 @@ public class InputContainer {
 			}
 		}
 		return type;
+	}
+
+	public Component createConfigList(String fieldName, List<String> choices) {
+		JComboBox<String> combo = new JComboBox<>();
+		JPanel panel =  new MyPanel(fieldName) {
+			@Override
+			JComponent createWidget(String v) {
+				try {
+					
+//					combo.setEditable(true);
+					choices.forEach(cat -> {
+						combo.addItem(cat);
+					});
+					combo.setSelectedItem(v);
+					return combo;
+				} catch (SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+		};
+		JTextField textField = new JTextField();
+		textField.setPreferredSize(new Dimension(100, 24));
+		panel.add(textField);
+		JButton button = new JButton("Add");
+		panel.add(button);
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				combo.addItem(textField.getText());
+			}			
+		});
+		
+		return panel;
 	}
 	
 }

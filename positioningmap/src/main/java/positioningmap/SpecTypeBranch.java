@@ -29,8 +29,13 @@ public abstract class SpecTypeBranch {
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0) {
 			return onVaridation(specValue);
 		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.TwoDmensionalSize) == 0) {
+			return onTwoDimensional(specValue);
+		}
 		return false;
 	}
+
+	protected abstract boolean onTwoDimensional(SpecValue specValue2);
 
 	protected abstract boolean onVaridation(SpecValue specValue2);
 

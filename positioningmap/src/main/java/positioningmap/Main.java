@@ -38,7 +38,7 @@ public class Main {
 	}
 	
 	public enum SpecTypeEnum {
-		TwoDmensionalSize, Numeric, Choice, Boolean, Variation, Range
+		TwoDmensionalSize, Numeric, Choice, Boolean, Variation, Range, Text, MultipleChoice
 		
 	}
 	public enum Unit {
@@ -318,6 +318,20 @@ public class Main {
 				};
 				ui.setVisible(true);
 			}
+
+			@Override
+			void clearValue(int[] rows, int[] columns) {
+				for (int row : rows) {
+					for (int col : columns) {
+						String id = list.get(row).get(0).toString();
+						String model = title.get(col).toString();
+						specSheet.clearValue(id, model);
+						
+					}
+				}
+				updateModel(specSheet, model, false);
+			}
+
 		}.setVisible(true);
 	}
 

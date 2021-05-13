@@ -72,6 +72,13 @@ public class ScoreCalculator {
 						break;	
 					}
 				}
+				
+				boolean b = new BasicScoreCalculator().calc(specDef, specValue, useCaseDefElement).value >= 0;
+				boolean enabled = true;
+				if ((useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) && !b) {
+					enabled = false;
+				}
+/*				
 				boolean enabled = new SpecTypeBranch(specDef, specValue) {
 
 					@Override
@@ -131,7 +138,7 @@ public class ScoreCalculator {
 					}
 					
 				}.branch();
-				
+*/
 				if (!enabled) {
 					target = false;
 					break;

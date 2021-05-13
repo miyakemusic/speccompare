@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JButton;
@@ -20,6 +21,8 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -64,7 +67,9 @@ public class ValueEditor extends JDialog {
 			typical.setBorder(new TitledBorder("Typical"));
 			createArea(specDef, specHolder.getTypical(), typical);
 		}
-
+		
+//		this.pack();
+		
 		JPanel control = new JPanel();
 		this.getContentPane().add(control, BorderLayout.SOUTH);
 		control.setLayout(new FlowLayout());
@@ -77,6 +82,7 @@ public class ValueEditor extends JDialog {
 			public void actionPerformed(ActionEvent e) {
 				for (LocalSpecKey key : inputs.keySet()) {
 					String value = "";
+					List<String> list = null;
 					JComponent component = inputs.get(key);
 					if (component instanceof JTextField) {
 						value = ((JTextField)component).getText();
@@ -86,6 +92,9 @@ public class ValueEditor extends JDialog {
 					}
 					else if (component instanceof JCheckBox) {
 						value = String.valueOf(((JCheckBox)component).isSelected());
+					}
+					else if (component instanceof MyTextArea) {
+						list = ((MyTextArea)component).textList();
 					}
 					SpecValue specValue = key.spec;
 					try {
@@ -110,6 +119,10 @@ public class ValueEditor extends JDialog {
 							Method method = SpecValue.class.getMethod("set" + key.field, new Class[]{ Boolean.class });
 							method.invoke(specValue, Boolean.valueOf(value));
 						}
+						else if (SpecValue.class.getDeclaredField(key.field.toLowerCase()).getType().equals(List.class)) {
+							Method method = SpecValue.class.getMethod("set" + key.field, new Class[]{ List.class });
+							method.invoke(specValue, list);
+						}
 					} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
 							| SecurityException | NoSuchMethodException | InvocationTargetException e1) {
 						e1.printStackTrace();
@@ -129,7 +142,8 @@ public class ValueEditor extends JDialog {
 	}
 
 	private void createArea(SpecDef specDef, SpecValue specValue, JPanel panel) {
-		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
+		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) 
+				|| (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
 			panel.setPreferredSize(new Dimension(200, 80));
 			panel.add(createTextField(specValue, "X"));
 			panel.add(new JLabel(specDef.getUnit()));
@@ -143,12 +157,7 @@ public class ValueEditor extends JDialog {
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0) {
 			panel.setPreferredSize(new Dimension(200, 80));
-			JComboBox<String> combo = new JComboBox<>();
-			combo.addItem("");;
-			specDef.getChoices().forEach(v -> {
-				combo.addItem(v);
-			});
-			combo.setSelectedItem(specValue.getString());
+			JComboBox<String> combo = createComboBox(specDef, specValue);
 			panel.add(combo);
 			
 			inputs.put(new LocalSpecKey(specValue, "String"), combo);
@@ -160,6 +169,40 @@ public class ValueEditor extends JDialog {
 			inputs.put(new LocalSpecKey(specValue, "Available"), check);
 			panel.add(check);
 		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Text) == 0) {
+			panel.setPreferredSize(new Dimension(200, 80));
+			panel.add(createTextField(specValue, "String"));
+			panel.add(new JLabel(specDef.getUnit()));			
+		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.MultipleChoice) == 0) {
+			panel.setPreferredSize(new Dimension(200, 100));
+			JComboBox<String> combo = createComboBox(specDef, specValue);
+			panel.add(combo);
+			
+			MyTextArea area = new MyTextArea();
+			area.setPreferredSize(new Dimension(200, 100));
+			area.addList(specValue.getMultiple());
+			panel.add(new JScrollPane(area));
+			JButton button = new JButton("Add");
+			panel.add(button);
+			button.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					area.add(combo.getSelectedItem().toString());
+				}
+			});
+			inputs.put(new LocalSpecKey(specValue, "Multiple"), area);	
+		}
+	}
+
+	private JComboBox<String> createComboBox(SpecDef specDef, SpecValue specValue) {
+		JComboBox<String> combo = new JComboBox<>();
+		combo.addItem("");;
+		specDef.getChoices().forEach(v -> {
+			combo.addItem(v);
+		});
+		combo.setSelectedItem(specValue.getString());
+		return combo;
 	}
 	
 	private Component createTextField(SpecValue specValue, String field) {
