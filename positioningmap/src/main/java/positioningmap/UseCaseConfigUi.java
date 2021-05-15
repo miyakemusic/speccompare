@@ -16,6 +16,11 @@ import javax.swing.JTable;
 
 public abstract class UseCaseConfigUi extends JFrame {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public UseCaseConfigUi(SpecSheet specSheet, UseCaseContainer pmdefs2) {
 		setSize(new Dimension(1000, 800));
 		getContentPane().setLayout(new BorderLayout());

@@ -591,10 +591,11 @@ public abstract class TableFrame extends JFrame {
 	         	        
 	        if (column >= 2) {
 	        	ResultLevelEnum resultLevelEnum = tableFrameInterface.qualified(row, table.getColumnName(column));
+
 		        if (!tableFrameInterface.isEnabled(row, table.getColumnName(column)) ) {
 		        	this.setBackground(gray);
 		        }
-		        if (resultLevelEnum.compareTo(ResultLevelEnum.Critical)== 0) {
+		        else if (resultLevelEnum.compareTo(ResultLevelEnum.Critical)== 0) {
 		        	this.setBackground(Color.RED);
 		        }
 		        else if (resultLevelEnum.compareTo(ResultLevelEnum.Warning)== 0) {
@@ -603,6 +604,7 @@ public abstract class TableFrame extends JFrame {
 		        else if (resultLevelEnum.compareTo(ResultLevelEnum.Qualify)== 0) {
 		        	this.setBackground(lightGreen);
 		        }
+
 	        }
 	        this.setFont(table.getFont());
 	        this.setText(value.toString());

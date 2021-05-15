@@ -56,17 +56,6 @@ public abstract class UseCaseConfigModel extends AbstractTableModel {
 	private UseCaseContainer pmdefs;
 	public UseCaseConfigModel(SpecSheet specSheet, UseCaseContainer pmdefs2) {
 		this.pmdefs =pmdefs2;
-//		pmdefs.add("MFH/FTTH(G-PON/GE-PON)");
-//		pmdefs.add("MFH(NG-PON2)");
-//		pmdefs.add("MFH/DAA/RPHY(WDM)");
-//		pmdefs.add("MFH(OADM)");
-//		pmdefs.add("Core");
-//		pmdefs.add("Metro");
-//		pmdefs.add("Submarine");
-//		pmdefs.add("DCI");
-//		pmdefs.add("DCI(ROADM)");
-//		pmdefs.add("Fiber Manufacturing");
-
 		this.specSheet = specSheet;
 		update();
 	}

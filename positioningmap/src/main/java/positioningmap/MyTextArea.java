@@ -3,34 +3,45 @@ package positioningmap;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.JTextArea;
 
-public class MyTextArea extends JTextArea {
+public class MyTextArea extends JList<String> {
 
+	private DefaultListModel<String> model;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public MyTextArea() {
+		model = new DefaultListModel<>();
+		this.setModel(model);
+	}
+	
 	public void add(String string) {
 		if (string.isEmpty()) {
 			return;
 		}
 		
-		for (String s : this.getText().split("\n")) {
-			if (s.equals(string)) {
+		for (int row = 0; row < model.getSize(); row++) {
+			String value = model.getElementAt(row);
+			if (value.equals(string)) {
 				return;
 			}
 		}
 		
-		if (!this.getText().isEmpty()) {
-			this.setText(this.getText() + "\n" + string);
-		}
-		else {
-			this.setText(string);
-		}
+		model.addElement(string);
 	}
 
-	public List<String> textList() {
+	public List<String> textList() {	
 		List<String> ret = new ArrayList<>();
-		for (String s : this.getText().split("\n")) {
-			ret.add(s);
-		}		
+		for (int row = 0; row < model.getSize(); row++) {
+			String value = model.getElementAt(row);
+			ret.add(value);
+		}
 		return ret;
 	}
 
@@ -38,6 +49,10 @@ public class MyTextArea extends JTextArea {
 		multiple.forEach(s -> {
 			this.add(s);
 		});
+	}
+
+	public void delete() {
+		model.removeElementAt(this.getSelectedIndex());
 	}
 
 }

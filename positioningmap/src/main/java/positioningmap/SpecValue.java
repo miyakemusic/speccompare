@@ -137,6 +137,7 @@ public class SpecValue implements Cloneable {
 	}
 
 	public void setMultiple(List<String> multiple) {
+		this.defined = true;
 		this.multiple = multiple;
 	}
 
@@ -149,6 +150,7 @@ public class SpecValue implements Cloneable {
 			ret.string = new String(this.string);
 			ret.x = new Double(this.x);
 			ret.y = new Double(this.y);
+			ret.multiple = new ArrayList<String>(this.multiple);
 			
 			return ret;
 		} catch (CloneNotSupportedException e) {

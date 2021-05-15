@@ -78,67 +78,6 @@ public class ScoreCalculator {
 				if ((useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) && !b) {
 					enabled = false;
 				}
-/*				
-				boolean enabled = new SpecTypeBranch(specDef, specValue) {
-
-					@Override
-					protected boolean onVaridation(SpecValue specValue2) {
-						if (useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) {
-							if (specDef.getBetter().compareTo(Better.Higher) == 0) {
-								if (useCaseDefElement.getThreshold() > specValue2.getX()) {
-									return false;
-								}
-							}
-							else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
-								if (useCaseDefElement.getThreshold() < specValue2.getX()) {
-									return false;
-								}								
-							}
-						}
-						return true;
-					}
-
-					@Override
-					protected boolean onChoice(SpecValue specValue2) {
-						// TODO Auto-generated method stub
-						return true;
-					}
-
-					@Override
-					protected boolean onRange(SpecValue specValue2) {
-						// TODO Auto-generated method stub
-						return true;
-					}
-
-					@Override
-					protected boolean onNumeric(SpecValue specValue2) {
-						if (useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) {
-							if (specDef.getBetter().compareTo(Better.Higher) == 0) {
-								if (useCaseDefElement.getThreshold() > specValue2.getX()) {
-									return false;
-								}
-							}
-							else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
-								if (useCaseDefElement.getThreshold() < specValue2.getX()) {
-									return false;
-								}								
-							}
-						}
-						return true;
-					}
-
-					@Override
-					protected boolean onBoolean(SpecValue specValue2) {
-						if (useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) {
-							if (!specValue2.getAvailable()) {
-								return false;
-							}							
-						}
-						return true;
-					}
-					
-				}.branch();
-*/
 				if (!enabled) {
 					target = false;
 					break;

@@ -107,20 +107,56 @@ public class Main {
 				return specSheet.booleanIds();
 			}
 
+//			@Override
+//			public boolean isEnabled(int row, String product) {
+//				String id = list.get(row).get(0);
+//				SpecDef specDef = specSheet.find(id);
+//				
+//				if (specDef.getParentId() != null && !specDef.getParentId().isEmpty()) {
+//					SpecHolder value = specSheet.getValue(specDef.getParentId(), product);
+//					if (value.getGuarantee().getAvailable()) {
+//						SpecDef specDef2 = specDef;
+//						while (true) {
+//							String parentId = specSheet.find(specDef2.getParentId()).getParentId();
+//							if ((parentId != null) && !parentId.isEmpty()) {
+//								if (specSheet.getValue(parentId, product).getGuarantee().getAvailable()) {
+//									specDef2 = specSheet.find(parentId);
+//								}
+//								else {
+//									return false;
+//								}
+//							}
+//							else {
+//								break;
+//							}
+//						}
+//						return true;
+//					}
+//					else {
+//						return false;
+//					}
+//				}
+//				return true;
+//				
+//			}
+
 			@Override
 			public boolean isEnabled(int row, String product) {
 				String id = list.get(row).get(0);
-				SpecDef specDef = specSheet.find(id);
-				if (specDef.getParentId() != null && !specDef.getParentId().isEmpty()) {
-					SpecHolder value = specSheet.getValue(specDef.getParentId(), product);
-					if (value.getGuarantee().getAvailable()) {
-						return true;
-					}
-					else {
-						return false;
-					}
-				}
-				return true;
+				return new EnableChecker().check(specSheet, id, product);
+				
+//				SpecDef specDef = specSheet.find(id);
+//				
+//				if (specDef.getParentId() != null && !specDef.getParentId().isEmpty()) {
+//					SpecHolder value = specSheet.getValue(specDef.getParentId(), product);
+//					if (value.getGuarantee().getAvailable()) {
+//						return true;
+//					}
+//					else {
+//						return false;
+//					}
+//				}
+//				return true;
 			}
 
 

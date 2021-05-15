@@ -270,10 +270,22 @@ public class InputContainer {
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				for (int i = 0; i < combo.getItemCount(); i++) {
+					if (combo.getItemAt(i).equals(textField.getText()) ) {
+						return;
+					}
+				}
 				combo.addItem(textField.getText());
 			}			
 		});
-		
+		JButton remove = new JButton("Remove");
+		panel.add(remove);
+		remove.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				combo.removeItemAt(combo.getSelectedIndex());
+			}
+		});
 		return panel;
 	}
 	

@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
@@ -21,8 +20,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -39,25 +36,27 @@ public class ValueEditor extends JDialog {
 	public ValueEditor(JFrame parent, String model, SpecDef specDef, SpecHolder specHolder) {
 		super(parent);
 		setLocationRelativeTo(null);
-		
+		int height = 0;
 		this.setTitle(model + " " + specDef.getCategory() + " - " + specDef.getName());
-		this.setSize(new Dimension(400, 230));
+		
 		this.getContentPane().setLayout(new BorderLayout());
 				
 		JPanel base = new JPanel();
 		this.getContentPane().add(base, BorderLayout.CENTER);
-		base.setLayout(new GridLayout(3, 1));
+		//base.setLayout(new GridLayout(3, 1));
+		base.setLayout(new FlowLayout());
 		
 		JPanel title = new JPanel();
-		base.add(title);
-		title.add(new JLabel("<HTML>" + model + "<br>" + specDef.getCategory() + " - " + specDef.getName() + "</HTML>"));
+		this.getContentPane().add(title, BorderLayout.NORTH);
 		
-		
+		title.add(new JLabel("<HTML>" + model + " / " + specDef.getCategory() + " - " + specDef.getName() + "</HTML>"));
+				
 		JPanel guarantee = new JPanel();
 		base.add(guarantee);	
 		guarantee.setLayout(new FlowLayout());
 		guarantee.setBorder(new TitledBorder("Guarantee"));
 		createArea(specDef, specHolder.getGuarantee(), guarantee);
+		height += guarantee.getPreferredSize().height;
 		
 		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.Range) == 0)
 				|| (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
@@ -66,6 +65,7 @@ public class ValueEditor extends JDialog {
 			typical.setLayout(new FlowLayout());
 			typical.setBorder(new TitledBorder("Typical"));
 			createArea(specDef, specHolder.getTypical(), typical);
+			height += typical.getPreferredSize().height;
 		}
 		
 //		this.pack();
@@ -77,6 +77,11 @@ public class ValueEditor extends JDialog {
 		JButton cancelButton = new JButton("Cancel");
 		control.add(okButton);
 		control.add(cancelButton);
+		height += control.getPreferredSize().height;
+		
+		base.setPreferredSize(new Dimension(600, height + 50));
+		this.pack();
+		
 		okButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -175,23 +180,12 @@ public class ValueEditor extends JDialog {
 			panel.add(new JLabel(specDef.getUnit()));			
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.MultipleChoice) == 0) {
-			panel.setPreferredSize(new Dimension(200, 100));
-			JComboBox<String> combo = createComboBox(specDef, specValue);
-			panel.add(combo);
+			panel.setPreferredSize(new Dimension(300, 150));
 			
-			MyTextArea area = new MyTextArea();
-			area.setPreferredSize(new Dimension(200, 100));
-			area.addList(specValue.getMultiple());
-			panel.add(new JScrollPane(area));
-			JButton button = new JButton("Add");
-			panel.add(button);
-			button.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					area.add(combo.getSelectedItem().toString());
-				}
-			});
-			inputs.put(new LocalSpecKey(specValue, "Multiple"), area);	
+			MultipleChoiceUi multiplePane = new MultipleChoiceUi(specDef.getChoices(), specValue.getMultiple());
+			panel.add(multiplePane);
+
+			inputs.put(new LocalSpecKey(specValue, "Multiple"), multiplePane.textArea());	
 		}
 	}
 
