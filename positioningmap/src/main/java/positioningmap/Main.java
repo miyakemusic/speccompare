@@ -107,56 +107,10 @@ public class Main {
 				return specSheet.booleanIds();
 			}
 
-//			@Override
-//			public boolean isEnabled(int row, String product) {
-//				String id = list.get(row).get(0);
-//				SpecDef specDef = specSheet.find(id);
-//				
-//				if (specDef.getParentId() != null && !specDef.getParentId().isEmpty()) {
-//					SpecHolder value = specSheet.getValue(specDef.getParentId(), product);
-//					if (value.getGuarantee().getAvailable()) {
-//						SpecDef specDef2 = specDef;
-//						while (true) {
-//							String parentId = specSheet.find(specDef2.getParentId()).getParentId();
-//							if ((parentId != null) && !parentId.isEmpty()) {
-//								if (specSheet.getValue(parentId, product).getGuarantee().getAvailable()) {
-//									specDef2 = specSheet.find(parentId);
-//								}
-//								else {
-//									return false;
-//								}
-//							}
-//							else {
-//								break;
-//							}
-//						}
-//						return true;
-//					}
-//					else {
-//						return false;
-//					}
-//				}
-//				return true;
-//				
-//			}
-
 			@Override
 			public boolean isEnabled(int row, String product) {
 				String id = list.get(row).get(0);
 				return new EnableChecker().check(specSheet, id, product);
-				
-//				SpecDef specDef = specSheet.find(id);
-//				
-//				if (specDef.getParentId() != null && !specDef.getParentId().isEmpty()) {
-//					SpecHolder value = specSheet.getValue(specDef.getParentId(), product);
-//					if (value.getGuarantee().getAvailable()) {
-//						return true;
-//					}
-//					else {
-//						return false;
-//					}
-//				}
-//				return true;
 			}
 
 
@@ -477,7 +431,8 @@ public class Main {
 				for (Map.Entry<String, ProductSpec> entry : ps.entrySet()) {
 					ProductSpec pn = entry.getValue();
 					
-					line.add(pn.value(spec.id()) /*+ " " + spec.unit()*/);
+					//line.add(pn.value(spec.id()) /*+ " " + spec.unit()*/);
+					line.add(createText(spec, pn.getValues().get(spec.getId())));
 				}
 				list.add(line);
 			}
@@ -497,6 +452,96 @@ public class Main {
 		if (positioningMapModel != null) {
 			positioningMapModel.update();
 		}
+	}
+
+	String createTextReturnValue = "";
+	private String createText(SpecDef spec, SpecHolder specHolder) {
+		
+	
+		new SpecTypeBranch(spec, specHolder) {
+
+			@Override
+			protected boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.getX() + "x" ; guarantee.getY();
+				}
+
+				return false;
+			}
+
+			@Override
+			protected boolean onVaridation(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.getX() + spec.getUnit();
+				}
+				if (typical != null && typical.getDefined()) {
+					if (!createTextReturnValue.isEmpty()) {
+						createTextReturnValue += "/";
+					}
+					createTextReturnValue += typical.getX() + spec.getUnit();
+				}
+				return false;
+			}
+
+			@Override
+			protected boolean onChoice(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.getString();
+				}
+				return false;
+			}
+
+			@Override
+			protected boolean onRange(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.getX() + " to " + guarantee.getY() + spec.getUnit();
+				}
+				if (typical != null && typical.getDefined()) {
+					if (!createTextReturnValue.isEmpty()) {
+						createTextReturnValue += "/";
+					}
+					createTextReturnValue += typical.getX() + " to " + typical.getY() + spec.getUnit();
+				}
+				return false;
+			}
+
+			@Override
+			protected boolean onNumeric(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.getX() + spec.getUnit();
+				}
+				if (typical != null && typical.getDefined()) {
+					if (!createTextReturnValue.isEmpty()) {
+						createTextReturnValue += "/";
+					}
+					createTextReturnValue += typical.getX() + spec.getUnit();
+				}
+				return false;
+			}
+
+			@Override
+			protected boolean onBoolean(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					if (guarantee.getAvailable()) {
+						createTextReturnValue = "Yes";
+					}
+					else {
+						createTextReturnValue = "No";
+					}
+				}
+				return false;
+			}
+
+			@Override
+			protected boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.text();
+				}
+				return false;
+			}
+			
+		}.branch();
+		return createTextReturnValue;
 	}
 
 	private void createDemo() {
@@ -622,7 +667,7 @@ public class Main {
 				System.out.println();
 			}
 
-			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specValue, useCaseDefE);
+			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specHolder, useCaseDefE);
 			if (ret.value >= 0.0) {
 				return ResultLevelEnum.Qualify;
 			}
@@ -631,62 +676,5 @@ public class Main {
 			}
 		}
 		return failResult.NotJudged;
-//			boolean ret = new SpecTypeBranch(specDef, specValue) {
-//
-//				@Override
-//				protected boolean onVaridation(SpecValue specValue2) {
-//					return judge(useCaseDefE, specDef, specValue2);
-//				}
-//
-//				private boolean judge(UseCaseDefElement useCaseDefE, SpecDef specDef, SpecValue specValue2) {
-//					if (specDef.getBetter().compareTo(Better.Higher) == 0) {
-//						return useCaseDefE.getThreshold() <= specValue2.getX();
-//					}
-//					else if (specDef.getBetter().compareTo(Better.Lower) == 0) {
-//						return useCaseDefE.getThreshold() >= specValue2.getX();
-//					}
-//					
-//					return false;
-//				}
-//
-//				@Override
-//				protected boolean onChoice(SpecValue specValue2) {
-//					// TODO Auto-generated method stub
-//					return false;
-//				}
-//
-//				@Override
-//				protected boolean onRange(SpecValue specValue2) {
-//					// TODO Auto-generated method stub
-//					return false;
-//				}
-//
-//				@Override
-//				protected boolean onNumeric(SpecValue specValue2) {
-//					return judge(useCaseDefE, specDef, specValue2);
-//				}
-//
-//				@Override
-//				protected boolean onBoolean(SpecValue specValue2) {
-//					if (!specValue2.getDefined()) {
-//						return false;
-//					}
-//					if (!specValue2.getAvailable()) {
-//						return false;
-//					}
-//					return true;
-//				}
-//				
-//			}.branch();
-//			
-//			if (!ret) {
-//				return failResult;
-//			}
-//			else {
-//				return ResultLevelEnum.Qualify;
-//			}
-//		}
-//		
-//		return ResultLevelEnum.NotJudged;
 	}
 }

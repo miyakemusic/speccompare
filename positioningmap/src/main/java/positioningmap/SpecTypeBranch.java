@@ -6,46 +6,62 @@ import positioningmap.Main.SpecTypeEnum;
 public abstract class SpecTypeBranch {
 
 	private SpecDef specDef;
+	private SpecHolder specHolder;
 	private SpecValue specValue;
 
-	public SpecTypeBranch(SpecDef specDef, SpecValue specValue) {
+	public SpecTypeBranch(SpecDef specDef, SpecHolder specHolder) {
 		this.specDef = specDef;
-		this.specValue = specValue;
+		if (specHolder == null) {
+			return;
+		}
+		this.specHolder = specHolder;
+		this.specValue = specHolder.getGuarantee();
+		if (this.specValue == null) {
+			this.specValue = specHolder.getTypical();
+		}
 	}
 
 	public boolean branch() {
+		if (this.specHolder == null) {
+			return false;
+		}
 		if (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
-			return onBoolean(specValue);
+			return onBoolean(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) {
-			return onNumeric(specValue);
+			return onNumeric(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Range) == 0) {
-			return onRange(specValue);
+			return onRange(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0) {
-			return onChoice(specValue);
+			return onChoice(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0) {
-			return onVaridation(specValue);
+			return onVaridation(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.TwoDmensionalSize) == 0) {
-			return onTwoDimensional(specValue);
+			return onTwoDimensional(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
+		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Text) == 0) {
+			return onText(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
 		return false;
 	}
 
-	protected abstract boolean onTwoDimensional(SpecValue specValue2);
+	protected abstract boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2);
 
-	protected abstract boolean onVaridation(SpecValue specValue2);
+	protected abstract boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue);
 
-	protected abstract boolean onChoice(SpecValue specValue2);
+	protected abstract boolean onVaridation(SpecValue guarantee, SpecValue typical, SpecValue specValue);
 
-	protected abstract boolean onRange(SpecValue specValue2);
+	protected abstract boolean onChoice(SpecValue guarantee, SpecValue typical, SpecValue specValue);
 
-	protected abstract boolean onNumeric(SpecValue specValue2);
+	protected abstract boolean onRange(SpecValue guarantee, SpecValue typical, SpecValue specValue);
 
-	abstract protected boolean onBoolean(SpecValue specValue2);
+	protected abstract boolean onNumeric(SpecValue guarantee, SpecValue typical, SpecValue specValue);
+
+	abstract protected boolean onBoolean(SpecValue guarantee, SpecValue typical, SpecValue specValue);
 
 }
 abstract class BetterBranch {

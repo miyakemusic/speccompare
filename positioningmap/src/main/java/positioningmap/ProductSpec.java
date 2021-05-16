@@ -165,5 +165,15 @@ public class ProductSpec implements Cloneable {
 		removes.forEach(id -> {
 			values.remove(id);
 		});
+		
+		values.forEach((id, v) -> {
+			SpecValue value = v.getTypical();
+			if (value == null) {
+				return;
+			}
+			if (value.getAvailable() == false && value.getX() == Double.POSITIVE_INFINITY && value.getY() == Double.NEGATIVE_INFINITY && value.getMultiple().size() == 0 && value.getString().isEmpty()) {
+				value.setDefined(false);
+			}
+		});
 	}
 }

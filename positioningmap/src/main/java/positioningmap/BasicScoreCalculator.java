@@ -4,17 +4,17 @@ import positioningmap.UseCaseDefElement.Level;
 
 public class BasicScoreCalculator {
 
-	public DoubleWrapper calc(SpecDef specDef, SpecValue specValue, UseCaseDefElement useCaseDefElement) {
+	public DoubleWrapper calc(SpecDef specDef, SpecHolder specValue, UseCaseDefElement useCaseDefElement) {
 		DoubleWrapper ret = new DoubleWrapper();
 
 		new SpecTypeBranch(specDef, specValue) {
 			@Override
-			protected boolean onVaridation(SpecValue specValue2) {
+			protected boolean onVaridation(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				return judgeValue(specDef, ret, specValue2);
 			}
 
 			@Override
-			protected boolean onChoice(SpecValue specValue2) {
+			protected boolean onChoice(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				return new BetterBranch(specDef, specValue2) {
 					@Override
 					protected boolean onWilder(SpecValue specValue2) {
@@ -43,7 +43,7 @@ public class BasicScoreCalculator {
 			}
 
 			@Override
-			protected boolean onRange(SpecValue specValue2) {
+			protected boolean onRange(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				return new BetterBranch(specDef, specValue2) {
 					@Override
 					protected boolean onWilder(SpecValue specValue2) {
@@ -90,12 +90,12 @@ public class BasicScoreCalculator {
 			}
 
 			@Override
-			protected boolean onNumeric(SpecValue specValue2) {
+			protected boolean onNumeric(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				return judgeValue(specDef, ret, specValue2);
 			}
 
 			@Override
-			protected boolean onBoolean(SpecValue specValue2) {
+			protected boolean onBoolean(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (!specValue2.getAvailable()) {
 					ret.value = -0.2;
 				}
@@ -137,7 +137,7 @@ public class BasicScoreCalculator {
 			}
 
 			@Override
-			protected boolean onTwoDimensional(SpecValue specValue2) {
+			protected boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				return new BetterBranch(specDef, specValue2) {
 
 					@Override
@@ -171,6 +171,12 @@ public class BasicScoreCalculator {
 					}
 					
 				}.branch();
+			}
+
+			@Override
+			protected boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				// TODO Auto-generated method stub
+				return false;
 			}			
 		}.branch();
 		

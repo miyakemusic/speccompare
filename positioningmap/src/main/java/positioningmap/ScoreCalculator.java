@@ -73,7 +73,7 @@ public class ScoreCalculator {
 					}
 				}
 				
-				boolean b = new BasicScoreCalculator().calc(specDef, specValue, useCaseDefElement).value >= 0;
+				boolean b = new BasicScoreCalculator().calc(specDef, productSpec.getValues().get(specDef.id()), useCaseDefElement).value >= 0;
 				boolean enabled = true;
 				if ((useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) && !b) {
 					enabled = false;
@@ -109,7 +109,7 @@ public class ScoreCalculator {
 					break;
 				}
 				UseCaseDefElement useCaseDefElement = usecaseDef.value(specDef.getId());
-				DoubleWrapper score  = calcScore(specDef, specValue, useCaseDefElement);
+				DoubleWrapper score  = calcScore(specDef, productSpec.getValues().get(specDef.id()), useCaseDefElement);
 				System.out.println("SCORE:" + productName.replace("\n", "") + "." + specDef.getName() + " = " + score);
 				sum += score.value;
 				mm.setValue(score.value);
@@ -134,8 +134,8 @@ public class ScoreCalculator {
 		return specValue;
 	}
 		
-	private DoubleWrapper calcScore(SpecDef specDef, SpecValue specValue, UseCaseDefElement useCaseDefElement) {
-		return new BasicScoreCalculator().calc(specDef, specValue, useCaseDefElement);
+	private DoubleWrapper calcScore(SpecDef specDef, SpecHolder specHolder, UseCaseDefElement useCaseDefElement) {
+		return new BasicScoreCalculator().calc(specDef, specHolder, useCaseDefElement);
 	}
 
 	public CalcResult calc(String product) {
