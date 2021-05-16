@@ -3,6 +3,8 @@ package positioningmap;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class SpecValue implements Cloneable {
 
 	public static final String INITIAL_VALUE = "-Infinity";
@@ -14,27 +16,38 @@ public class SpecValue implements Cloneable {
 	private Boolean defined = false;
 	private List<String> multiple = new ArrayList<>();
 	
+//	@JsonIgnore
+//	private boolean init;
+//	@JsonIgnore
+//	public boolean isInit() {
+//		return init;
+//	}
+//	@JsonIgnore
+//	public void setInit(boolean init) {
+//		this.init = init;
+//	}
+
 	public SpecValue() {}
 	
 	public SpecValue(double x1, double y1) {
 		this.x = x1;
 		this.y = y1;
-		this.defined = true;
+		this.setDefined(true);
 	}
 
 	public SpecValue(boolean available1) {
 		this.available = available1;
-		this.defined = true;
+		this.setDefined(true);
 	}
 
 	public SpecValue(double v) {
 		this.x = v;
-		this.defined = true;
+		this.setDefined(true);
 	}
 
 	public SpecValue(String string1) {
 		this.string = string1;
-		this.defined = true;
+		this.setDefined(true);
 	}
 
 	public String text() {
@@ -80,10 +93,9 @@ public class SpecValue implements Cloneable {
 	}
 
 	public void setAvailable(Boolean available) {
-//		if (this.available != available) {
-			this.available = available;
-			this.defined = true;
-//		}
+		this.available = available;
+		this.updateDefined();
+		//this.setDefined(true);
 	}
 
 	public String getString() {
@@ -92,12 +104,13 @@ public class SpecValue implements Cloneable {
 
 	public void setString(String string) {
 		this.string = string;
-		if (this.string.isEmpty()) {
-			this.defined = false;
-		}
-		else {
-			this.defined = true;
-		}
+		this.updateDefined();
+//		if (this.string.isEmpty()) {
+//			this.setDefined(false);
+//		}
+//		else {
+//			this.setDefined(true);
+//		}
 	}
 
 	public void setX(Double x) {
@@ -108,11 +121,12 @@ public class SpecValue implements Cloneable {
 	}
 
 	private void updateDefined() {
-		if (this.x == Double.NEGATIVE_INFINITY && this.y == Double.NEGATIVE_INFINITY) {
-			this.defined = false;
+		//if (this.x == Double.NEGATIVE_INFINITY && this.y == Double.NEGATIVE_INFINITY) {
+		if (this.initialized()) {
+			this.setDefined(false);
 		}
 		else {
-			this.defined = true;
+			this.setDefined(true);
 		}
 	}
 
@@ -137,8 +151,8 @@ public class SpecValue implements Cloneable {
 	}
 
 	public void setMultiple(List<String> multiple) {
-		this.defined = true;
 		this.multiple = multiple;
+		this.updateDefined();
 	}
 
 	@Override
@@ -169,4 +183,7 @@ public class SpecValue implements Cloneable {
 		this.multiple.clear();
 	}
 	
+	public boolean initialized() {
+		return x == Double.NEGATIVE_INFINITY && y == Double.NEGATIVE_INFINITY && available == false && string.isEmpty() && multiple.size() == 0;
+	}
 }

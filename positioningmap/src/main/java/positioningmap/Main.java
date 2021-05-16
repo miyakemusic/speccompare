@@ -456,16 +456,12 @@ public class Main {
 
 	String createTextReturnValue = "";
 	private String createText(SpecDef spec, SpecHolder specHolder) {
-		
-	
 		new SpecTypeBranch(spec, specHolder) {
-
 			@Override
 			protected boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
 					createTextReturnValue = guarantee.getX() + "x" ; guarantee.getY();
 				}
-
 				return false;
 			}
 
@@ -478,7 +474,7 @@ public class Main {
 					if (!createTextReturnValue.isEmpty()) {
 						createTextReturnValue += "/";
 					}
-					createTextReturnValue += typical.getX() + spec.getUnit();
+					createTextReturnValue += typical.getX() + "(Typ.)";
 				}
 				return false;
 			}
@@ -500,7 +496,7 @@ public class Main {
 					if (!createTextReturnValue.isEmpty()) {
 						createTextReturnValue += "/";
 					}
-					createTextReturnValue += typical.getX() + " to " + typical.getY() + spec.getUnit();
+					createTextReturnValue += typical.getX() + " to " + typical.getY() + "(Typ.)";
 				}
 				return false;
 			}
@@ -508,13 +504,13 @@ public class Main {
 			@Override
 			protected boolean onNumeric(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + spec.getUnit();
+					createTextReturnValue = guarantee.getX().toString();
 				}
 				if (typical != null && typical.getDefined()) {
 					if (!createTextReturnValue.isEmpty()) {
 						createTextReturnValue += "/";
 					}
-					createTextReturnValue += typical.getX() + spec.getUnit();
+					createTextReturnValue += typical.getX().toString() + "(Typ.)";
 				}
 				return false;
 			}

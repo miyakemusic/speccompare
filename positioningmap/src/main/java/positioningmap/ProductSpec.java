@@ -171,7 +171,7 @@ public class ProductSpec implements Cloneable {
 			if (value == null) {
 				return;
 			}
-			if (value.getAvailable() == false && value.getX() == Double.POSITIVE_INFINITY && value.getY() == Double.NEGATIVE_INFINITY && value.getMultiple().size() == 0 && value.getString().isEmpty()) {
+			if (value.initialized()) {
 				value.setDefined(false);
 			}
 		});

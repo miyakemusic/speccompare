@@ -124,6 +124,8 @@ public abstract class TableFrame extends JFrame {
 		this.tableFrameInterface = tableFrameInterface;
 		this.setSize(new Dimension(1200, 800));
 		this.getContentPane().setLayout(new BorderLayout());
+		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		
 		this.setLocationRelativeTo(null);
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout());
