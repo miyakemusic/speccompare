@@ -1,1 +1,1 @@
-{"values":{"Vendors":{"Anritsu":false,"EXFO":true,"Viavi":false},"Categories":{"Sale":true,"OTDR":true,"General":true,"OLTS":true,"Power Meter":true,"PON Power Meter":true,"Light Source":true,"VFL":true}},"useCaseName":"MFH(NG-PON2)","useCaseFilter":false}
+{"values":{"Vendors":{"Anritsu":true,"EXFO":true,"Viavi":true},"Categories":{"Sale":true,"OTDR":true,"General":true,"OLTS":true,"Power Meter":true,"PON Power Meter":true,"Light Source":true,"VFL":true}},"useCaseName":"MFH(NG-PON2)","useCaseFilter":false}
