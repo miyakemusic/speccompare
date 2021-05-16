@@ -461,7 +461,7 @@ public class Main {
 			@Override
 			protected boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + "x" ; guarantee.getY();
+					createTextReturnValue = guarantee.getX() + " x " + guarantee.getY();
 				}
 				return false;
 			}
