@@ -46,8 +46,13 @@ public abstract class SpecTypeBranch {
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Text) == 0) {
 			return onText(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.MultipleChoice) == 0) {
+			return onMultiple(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
+		}
 		return false;
 	}
+
+	protected abstract boolean onMultiple(SpecValue guarantee, SpecValue typical, SpecValue specValue2);
 
 	protected abstract boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2);
 

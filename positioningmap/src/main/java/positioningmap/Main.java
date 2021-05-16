@@ -456,6 +456,7 @@ public class Main {
 
 	String createTextReturnValue = "";
 	private String createText(SpecDef spec, SpecHolder specHolder) {
+		createTextReturnValue = "";
 		new SpecTypeBranch(spec, specHolder) {
 			@Override
 			protected boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
@@ -525,6 +526,9 @@ public class Main {
 						createTextReturnValue = "No";
 					}
 				}
+				else {
+					createTextReturnValue = "No";
+				}
 				return false;
 			}
 
@@ -532,6 +536,19 @@ public class Main {
 			protected boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
 					createTextReturnValue = guarantee.text();
+				}
+				return false;
+			}
+
+			@Override
+			protected boolean onMultiple(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					 guarantee.getMultiple().forEach(v -> {
+						 createTextReturnValue += v + ","; 
+					});
+					 if (!createTextReturnValue.isEmpty()) {
+						 createTextReturnValue = createTextReturnValue.substring(0, createTextReturnValue.length()-1);
+					 }
 				}
 				return false;
 			}

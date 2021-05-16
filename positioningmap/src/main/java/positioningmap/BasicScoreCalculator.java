@@ -177,6 +177,12 @@ public class BasicScoreCalculator {
 			protected boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				// TODO Auto-generated method stub
 				return false;
+			}
+
+			@Override
+			protected boolean onMultiple(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				// TODO Auto-generated method stub
+				return false;
 			}			
 		}.branch();
 		
