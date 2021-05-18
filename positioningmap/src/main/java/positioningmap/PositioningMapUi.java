@@ -135,7 +135,7 @@ public class PositioningMapUi extends JFrame {
 		public void paint(Graphics g1) {
 			super.paint(g1);
 			
-			System.out.println("paint");
+//			System.out.println("paint");
 			Graphics2D g = (Graphics2D)g1;
 			
 			g.setColor(Color.WHITE);

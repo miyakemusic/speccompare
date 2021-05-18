@@ -72,7 +72,6 @@ public abstract class UseCaseConfigModel extends AbstractTableModel {
 				row.id(specDef.id());
 			});
 		});
-		System.out.println();
 		
 		title.add("Category");
 		title.add("Spec");

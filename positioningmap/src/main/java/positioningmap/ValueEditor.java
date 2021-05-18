@@ -160,6 +160,15 @@ public class ValueEditor extends JDialog {
 			panel.add(createTextField(specValue, "Y"));
 			panel.add(new JLabel(specDef.getUnit()));			
 		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.ThreemensionalSize) == 0) {
+			panel.setPreferredSize(new Dimension(300, 80));
+			panel.add(createTextField(specValue, "X"));
+			panel.add(new JLabel(" x "));
+			panel.add(createTextField(specValue, "Y"));
+			panel.add(new JLabel(" x "));
+			panel.add(createTextField(specValue, "Z"));
+			panel.add(new JLabel(specDef.getUnit()));
+		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0) {
 			panel.setPreferredSize(new Dimension(200, 80));
 			JComboBox<String> combo = createComboBox(specDef, specValue);
@@ -187,6 +196,11 @@ public class ValueEditor extends JDialog {
 
 			inputs.put(new LocalSpecKey(specValue, "Multiple"), multiplePane.textArea());	
 		}
+		
+		{
+			panel.add(new JLabel("Comment:"));
+			panel.add(createTextField(specValue, "Comment"));			
+		}
 	}
 
 	private JComboBox<String> createComboBox(SpecDef specDef, SpecValue specValue) {
@@ -206,7 +220,7 @@ public class ValueEditor extends JDialog {
 				try {
 					Method method = SpecValue.class.getMethod("get" + field);
 					v = method.invoke(specValue).toString();
-				} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+				} catch (Exception e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}

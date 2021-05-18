@@ -148,6 +148,7 @@ class UseCaseDefElement {
 	private Level level = Level.Mandatory;
 	private Double threshold = 0.0;
 	private Double thresholdY = 0.0;
+	private Double thresholdZ = 0.0;
 	
 	@JsonIgnore
 	private UseCaseDefElementListener listener = new NullUseCaseDefElementListener();
@@ -177,6 +178,13 @@ class UseCaseDefElement {
 	}
 	public void setThresholdY(Double thresholdY) {
 		this.thresholdY = thresholdY;
+	}
+	
+	public Double getThresholdZ() {
+		return thresholdZ;
+	}
+	public void setThresholdZ(Double thresholdZ) {
+		this.thresholdZ = thresholdZ;
 	}
 	@JsonIgnore
 	public void setListener(UseCaseDefElementListener listener) {

@@ -142,13 +142,14 @@ public class BasicScoreCalculator {
 
 					@Override
 					protected boolean onWilder(SpecValue specValue2) {
-						double denominator = Math.abs(useCaseDefElement.getThreshold());
+						double denominator = Math.abs(useCaseDefElement.getThreshold() * useCaseDefElement.getThresholdY());
 						if (denominator == 0.0) {
 							denominator = Math.abs(specValue2.getX());
 						}
-						double value = (specValue2.getX() - useCaseDefElement.getThreshold()) / denominator;
-						double valueY = (specValue2.getY() - useCaseDefElement.getThresholdY()) / denominator;
-						ret.value = value + valueY;
+						
+						double value = (specValue2.getX()  * specValue2.getY()) / denominator;
+//						double valueY = (specValue2.getY() - useCaseDefElement.getThresholdY()) / denominator;
+						ret.value = value;
 						return false;
 					}
 
@@ -182,6 +183,19 @@ public class BasicScoreCalculator {
 			@Override
 			protected boolean onMultiple(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				// TODO Auto-generated method stub
+				return false;
+			}
+
+			@Override
+			protected boolean onThreeDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				double denominator = Math.abs(useCaseDefElement.getThreshold() * useCaseDefElement.getThresholdY() * useCaseDefElement.getThresholdZ());
+				if (denominator == 0.0) {
+					denominator = Math.abs(specValue2.getX());
+				}
+				
+				double value = (specValue2.getX() * specValue2.getY() * specValue2.getZ()) / denominator;
+//				double valueY = (specValue2.getY() - useCaseDefElement.getThresholdY()) / denominator;
+				ret.value = value;
 				return false;
 			}			
 		}.branch();

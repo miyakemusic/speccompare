@@ -88,10 +88,7 @@ public class PositioningMapModel {
 		double ymaxMax = Double.NEGATIVE_INFINITY;
 		double yminMin = Double.POSITIVE_INFINITY;
 		int j = 0;
-		for (String product : specSheet.products().keySet()) {
-//			if (j++ > 5) {
-//				break;
-//			}
+		for (String product : calc.result().keySet()/*specSheet.products().keySet()*/) {
 			Map<String, SpecHolder> values = specSheet.getProductSpecs().get(product).getValues();
 			
 			SpecHolder specX = values.get(specDefX.getId());

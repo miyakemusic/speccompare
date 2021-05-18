@@ -41,7 +41,7 @@ public class ScoreCalculator {
 				CalcResult mm = scores.get(productName);
 				mm.min = mm.getSum() / minMax.max* 80.0 - 8.0;// - minMax.range()/30.0;
 				mm.max = mm.getSum() / minMax.max * 80.0 + 8.0; //x\\+ minMax.range()/30.0;
-				System.out.println("min=" + mm.min + " max=" + mm.max);
+//				System.out.println("min=" + mm.min + " max=" + mm.max);
 				result.put(productName, mm);
 			});
 			minMax.max = 100.0;
@@ -144,6 +144,10 @@ public class ScoreCalculator {
 
 	public CalcResult minMax() {
 		return this.minMax;
+	}
+
+	public Map<String, CalcResult> result() {
+		return this.result;
 	}
 }
 

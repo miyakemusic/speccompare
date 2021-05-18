@@ -43,6 +43,9 @@ public abstract class SpecTypeBranch {
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.TwoDmensionalSize) == 0) {
 			return onTwoDimensional(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.ThreemensionalSize) == 0) {
+			return onThreeDimensional(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
+		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Text) == 0) {
 			return onText(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
@@ -51,6 +54,8 @@ public abstract class SpecTypeBranch {
 		}
 		return false;
 	}
+
+	protected abstract boolean onThreeDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2);
 
 	protected abstract boolean onMultiple(SpecValue guarantee, SpecValue typical, SpecValue specValue2);
 

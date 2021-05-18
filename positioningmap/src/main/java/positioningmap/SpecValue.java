@@ -11,10 +11,12 @@ public class SpecValue implements Cloneable {
 	
 	private Double x = Double.NEGATIVE_INFINITY;
 	private Double y = Double.NEGATIVE_INFINITY;
+	private Double z = Double.NEGATIVE_INFINITY;
 	private Boolean available = false;
 	private String string = "";
 	private Boolean defined = false;
 	private List<String> multiple = new ArrayList<>();
+	private String comment;
 	
 //	@JsonIgnore
 //	private boolean init;
@@ -26,6 +28,14 @@ public class SpecValue implements Cloneable {
 //	public void setInit(boolean init) {
 //		this.init = init;
 //	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
 
 	public SpecValue() {}
 	
@@ -86,6 +96,14 @@ public class SpecValue implements Cloneable {
 
 	public Double getY() {
 		return y;
+	}
+
+	public Double getZ() {
+		return z;
+	}
+
+	public void setZ(Double z) {
+		this.z = z;
 	}
 
 	public Boolean getAvailable() {

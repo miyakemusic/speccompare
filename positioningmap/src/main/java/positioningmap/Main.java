@@ -38,7 +38,7 @@ public class Main {
 	}
 	
 	public enum SpecTypeEnum {
-		TwoDmensionalSize, Numeric, Choice, Boolean, Variation, Range, Text, MultipleChoice
+		TwoDmensionalSize, Numeric, Choice, Boolean, Variation, Range, Text, MultipleChoice, ThreemensionalSize
 		
 	}
 	public enum Unit {
@@ -365,7 +365,7 @@ public class Main {
 					if (useCaseDef == null) {
 						return true;
 					}
-					System.out.println(productName);
+//					System.out.println(productName);
 					for (String id : specSheet.allIds()) {
 						SpecHolder specHolder = value.getValues().get(id);
 						if ((checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Critical) || 
@@ -552,6 +552,14 @@ public class Main {
 				}
 				return false;
 			}
+
+			@Override
+			protected boolean onThreeDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.getX() + " x " + guarantee.getY() +  " x " + guarantee.getZ();
+				}
+				return false;
+			}
 			
 		}.branch();
 		return createTextReturnValue;
@@ -677,7 +685,7 @@ public class Main {
 			}
 			SpecDef specDef = specSheet.find(id);
 			if (specDef == null) {
-				System.out.println();
+//				System.out.println();
 			}
 
 			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specHolder, useCaseDefE);
