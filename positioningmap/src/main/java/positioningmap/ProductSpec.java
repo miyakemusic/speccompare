@@ -13,18 +13,9 @@ import positioningmap.Main.SpecTypeEnum;
 
 public class ProductSpec implements Cloneable {
 
-//	@JsonIgnore
-//	private String productName;
 	private Map<String, SpecHolder> values = new HashMap<>();
 	private SpecInterface specInterface;
 	
-//	public String getProductName() {
-//		return productName;
-//	}
-//
-//	public void setProductName(String productName) {
-//		this.productName = productName;
-//	}
 
 	public Map<String, SpecHolder> getValues() {
 		return values;

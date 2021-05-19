@@ -21,6 +21,7 @@ public class SpecHolder implements Cloneable {
 		return this.typical;
 	}
 	
+
 	@Override
 	public SpecHolder clone() {
 		try {

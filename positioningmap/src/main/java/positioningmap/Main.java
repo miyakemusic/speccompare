@@ -57,7 +57,26 @@ public class Main {
 	protected FilterContainer filterContainer = new FilterContainer();
 	protected PositioningMapUi positioningMapUi;
 	private PositioningMapModel positioningMapModel;
+	private EnableChecker enableChecker;
+	private SatisfactionChecker satisfactionChecker;
 	public Main() {
+		enableChecker = new EnableChecker() {
+			@Override
+			protected SpecSheet getSpecSheet() {
+				return specSheet;
+			}
+		};
+		satisfactionChecker = new SatisfactionChecker() {
+			@Override
+			protected UseCaseContainer useCaseContainer() {
+				return pmdefs;
+			}
+
+			@Override
+			protected SpecSheet specSheet() {
+				return specSheet;
+			}
+		};
 		
 //		createDemo();
 		loadFile();
@@ -110,17 +129,20 @@ public class Main {
 			@Override
 			public boolean isEnabled(int row, String product) {
 				String id = list.get(row).get(0);
-				return new EnableChecker().check(specSheet, id, product);
+				//return specSheet.getValue(id, product).isEnabled();
+				//return new EnableChecker(specSheet).check(id, product);
+				return enableChecker.check(id, product);
 			}
 
 
 			@Override
-			public ResultLevelEnum qualified(int row, String columnName) {
+			public ResultLevelEnum qualified(int row, String product) {
 				String id = list.get(row).get(0);
-				SpecHolder specHolder = specSheet.getProductSpecs().get(columnName).getValues().get(id);
-				UseCaseDef useCaseDef = pmdefs.get(filterContainer.getUseCaseName());
+//				SpecHolder specHolder = specSheet.getValue(id, product);//.getProductSpecs().get(product).getValues().get(id);
+//				UseCaseDef useCaseDef = pmdefs.get(filterContainer.getUseCaseName());
 				
-				return checkQualify(useCaseDef, specHolder, id);
+				return satisfactionChecker.check(filterContainer.getUseCaseName(), product, id);
+//				return checkQualify(useCaseDef, specHolder, id);
 			}
 			@Override
 			public Collection<String> vendors() {
@@ -329,6 +351,7 @@ public class Main {
 		try {
 			this.specSheet = new ObjectMapper().readValue(new File("otdr.spec"), SpecSheet.class);
 			this.specSheet.init();
+//			this.enableChecker.clear();
 			
 			this.pmdefs = new ObjectMapper().readValue(new File("pmdef.json"), UseCaseContainer.class);
 			this.pmdefs.init(new UseCaseDefInterface() {
@@ -367,21 +390,19 @@ public class Main {
 					}
 //					System.out.println(productName);
 					for (String id : specSheet.allIds()) {
-						SpecHolder specHolder = value.getValues().get(id);
-						if ((checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Critical) || 
-								(checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Warning)) {
-							return false;
-						}
-					}
-//					for (Map.Entry<String, SpecHolder> entry : value.getValues().entrySet()) {
-//						SpecHolder specHolder = entry.getValue();
-//						String id = entry.getKey();
+//						SpecHolder specHolder = value.getValues().get(id);
+						
+						ResultLevelEnum ret = satisfactionChecker.check(filterContainer.getUseCaseName(), productName, id);
+						
 //						if ((checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Critical) || 
 //								(checkQualify(useCaseDef, specHolder, id) == ResultLevelEnum.Warning)) {
 //							return false;
 //						}
-//												
-//					};
+						if ((ret == ResultLevelEnum.Critical) || (ret == ResultLevelEnum.Warning)) {
+							return false;
+						}
+					}
+
 					return true;
 				}
 			});
@@ -413,6 +434,8 @@ public class Main {
 	private void updateModel(SpecSheet specOtdr, AbstractTableModel model, boolean structureChanged) {
 		this.list.clear();
 		this.title.clear();
+		this.enableChecker.clear();
+		this.satisfactionChecker.clear();
 		
 		Map<String, ProductSpec> ps = specOtdr.filteredProducts();
 		for (String category : specOtdr.filteredCategories()) {
@@ -454,117 +477,44 @@ public class Main {
 		}
 	}
 
-	String createTextReturnValue = "";
 	private String createText(SpecDef spec, SpecHolder specHolder) {
-		createTextReturnValue = "";
-		new SpecTypeBranch(spec, specHolder) {
-			@Override
-			protected boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + " x " + guarantee.getY();
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onVaridation(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + spec.getUnit();
-				}
-				if (typical != null && typical.getDefined()) {
-					if (!createTextReturnValue.isEmpty()) {
-						createTextReturnValue += "/";
-					}
-					createTextReturnValue += typical.getX() + "(Typ.)";
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onChoice(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getString();
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onRange(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + " to " + guarantee.getY() + spec.getUnit();
-				}
-				if (typical != null && typical.getDefined()) {
-					if (!createTextReturnValue.isEmpty()) {
-						createTextReturnValue += "/";
-					}
-					createTextReturnValue += typical.getX() + " to " + typical.getY() + "(Typ.)";
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onNumeric(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX().toString();
-				}
-				if (typical != null && typical.getDefined()) {
-					if (!createTextReturnValue.isEmpty()) {
-						createTextReturnValue += "/";
-					}
-					createTextReturnValue += typical.getX().toString() + "(Typ.)";
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onBoolean(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					if (guarantee.getAvailable()) {
-						createTextReturnValue = "Yes";
-					}
-					else {
-						createTextReturnValue = "No";
-					}
-				}
-				else {
-					createTextReturnValue = "No";
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.text();
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onMultiple(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					 guarantee.getMultiple().forEach(v -> {
-						 createTextReturnValue += v + ","; 
-					});
-					 if (!createTextReturnValue.isEmpty()) {
-						 createTextReturnValue = createTextReturnValue.substring(0, createTextReturnValue.length()-1);
-					 }
-				}
-				return false;
-			}
-
-			@Override
-			protected boolean onThreeDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
-				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + " x " + guarantee.getY() +  " x " + guarantee.getZ();
-				}
-				return false;
-			}
-			
-		}.branch();
-		return createTextReturnValue;
+		return new TextGenerator().generate(spec, specHolder);
 	}
 
+//	private ResultLevelEnum checkQualify(UseCaseDef useCaseDef, SpecHolder specHolder, String id) {
+//		UseCaseDefElement useCaseDefE = useCaseDef.value(id);
+//		ResultLevelEnum failResult = null;
+//		if ((useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) || (specHolder == null)) {
+//			failResult = ResultLevelEnum.Critical;
+//		}
+//		else {
+//			failResult = ResultLevelEnum.Warning;
+//		}
+//		
+//		if (useCaseDefE.getDefined()) {
+//			if (specHolder == null) {
+//				return failResult;
+//			}
+//			SpecValue specValue = specHolder.getGuarantee();
+//			if (specValue == null) {
+//				specValue = specHolder.getTypical();
+//			}
+//			SpecDef specDef = specSheet.find(id);
+//			if (specDef == null) {
+////				System.out.println();
+//			}
+//
+//			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specHolder, useCaseDefE);
+//			if (ret.value >= 0.0) {
+//				return ResultLevelEnum.Qualify;
+//			}
+//			else {
+//				return failResult;
+//			}
+//		}
+//		return failResult.NotJudged;
+//	}
+	
 	private void createDemo() {
 		String displayDevice = specSheet.addSpec("Display", "Device", SpecTypeEnum.Choice).choice("LCD").choice("OLED").id();
 		String resolutionId = specSheet.addSpec("Display", "Resolution", SpecTypeEnum.TwoDmensionalSize, "pixels", Better.Higher).id();
@@ -665,37 +615,4 @@ public class Main {
 		this.specSheet.init();
 	}
 
-	private ResultLevelEnum checkQualify(UseCaseDef useCaseDef, SpecHolder specHolder, String id) {
-		UseCaseDefElement useCaseDefE = useCaseDef.value(id);
-		ResultLevelEnum failResult = null;
-		if ((useCaseDefE.getLevel().compareTo(Level.Mandatory) == 0) || (specHolder == null)) {
-			failResult = ResultLevelEnum.Critical;
-		}
-		else {
-			failResult = ResultLevelEnum.Warning;
-		}
-		
-		if (useCaseDefE.getDefined()) {
-			if (specHolder == null) {
-				return failResult;
-			}
-			SpecValue specValue = specHolder.getGuarantee();
-			if (specValue == null) {
-				specValue = specHolder.getTypical();
-			}
-			SpecDef specDef = specSheet.find(id);
-			if (specDef == null) {
-//				System.out.println();
-			}
-
-			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specHolder, useCaseDefE);
-			if (ret.value >= 0.0) {
-				return ResultLevelEnum.Qualify;
-			}
-			else {
-				return failResult;
-			}
-		}
-		return failResult.NotJudged;
-	}
 }

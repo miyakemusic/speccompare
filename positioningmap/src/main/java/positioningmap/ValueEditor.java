@@ -222,7 +222,7 @@ public class ValueEditor extends JDialog {
 					v = method.invoke(specValue).toString();
 				} catch (Exception e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+				//	e.printStackTrace();
 				}
 
 		}

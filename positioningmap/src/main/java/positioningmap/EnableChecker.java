@@ -1,15 +1,38 @@
 package positioningmap;
 
-public class EnableChecker {
+public abstract class EnableChecker {
 
 	private boolean ret = true;
+	abstract protected SpecSheet getSpecSheet();
+		
+	private CheckerBase<Boolean> mapMap = new CheckerBase<>();
+	
+	public boolean check(String id, String product) {
+		try {
+			return calculated(product, id);
+		} catch (Exception e) {
+			ret = true;
+			check2(getSpecSheet(), id, product);
+			setCalculated(product, id, ret);
+			return ret;
+		}
+	}	
 
-//	private boolean ret = true;
-	public boolean check(SpecSheet specSheet, String id, String product) {
-		check2(specSheet, id, product);
-		return ret;
+	private void setCalculated(String product, String id, boolean ret2) {
+		this.mapMap.put(product, id, ret2);
 	}
 
+	private boolean calculated(String product, String id) throws Exception {
+		return this.mapMap.get(product, id);
+	}
+
+	public void clearProduct(String product) {
+		this.mapMap.remove(product);
+	}
+	public void clear() {
+		this.mapMap.clear();
+	}
+	
 	private Result check2(SpecSheet specSheet, String id, String product) {
 		SpecDef specDef = specSheet.find(id);
 		String parentId = specDef.getParentId();
@@ -37,7 +60,7 @@ public class EnableChecker {
 		}
 		return Result.TRUE;
 	}
-	
+
 	enum Result {
 		NO_PARENT,
 		TRUE,
