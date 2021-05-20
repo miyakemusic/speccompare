@@ -197,6 +197,12 @@ public class BasicScoreCalculator {
 //				double valueY = (specValue2.getY() - useCaseDefElement.getThresholdY()) / denominator;
 				ret.value = value;
 				return false;
+			}
+
+			@Override
+			protected boolean onInstrumentType(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				// TODO Auto-generated method stub
+				return false;
 			}			
 		}.branch();
 		

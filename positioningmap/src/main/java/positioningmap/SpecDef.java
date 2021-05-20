@@ -6,6 +6,7 @@ import java.util.List;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import positioningmap.Main.Better;
+import positioningmap.Main.InstrumentType;
 import positioningmap.Main.SpecTypeEnum;
 
 public class SpecDef {
@@ -77,6 +78,13 @@ public class SpecDef {
 	}
 	public void setSpecType(String specType) {
 		this.specType = SpecTypeEnum.valueOf(specType);
+//		if (this.specType.compareTo(SpecTypeEnum.InstrumentType) == 0) {
+//			this.choices.clear();
+//			for (int i = 0; i < InstrumentType.values().length; i++) {
+//				this.choices.add(InstrumentType.values()[i].name());
+//			}
+//			this.setName(SpecTypeEnum.InstrumentType.name());
+//		}
 	}
 	
 	@JsonIgnore

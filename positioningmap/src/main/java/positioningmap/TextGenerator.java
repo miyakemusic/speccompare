@@ -107,6 +107,14 @@ public class TextGenerator {
 				}
 				return false;
 			}
+
+			@Override
+			protected boolean onInstrumentType(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
+				if (guarantee != null && guarantee.getDefined()) {
+					createTextReturnValue = guarantee.getString();
+				}
+				return false;
+			}
 			
 		}.branch();
 		return createTextReturnValue;

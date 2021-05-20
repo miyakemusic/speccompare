@@ -169,9 +169,9 @@ public class ValueEditor extends JDialog {
 			panel.add(createTextField(specValue, "Z"));
 			panel.add(new JLabel(specDef.getUnit()));
 		}
-		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0) {
+		else if ((specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.InstrumentType) == 0)) {
 			panel.setPreferredSize(new Dimension(200, 80));
-			JComboBox<String> combo = createComboBox(specDef, specValue);
+			JComboBox<String> combo = createComboBox(specDef.getChoices(), specValue);
 			panel.add(combo);
 			
 			inputs.put(new LocalSpecKey(specValue, "String"), combo);
@@ -203,10 +203,10 @@ public class ValueEditor extends JDialog {
 		}
 	}
 
-	private JComboBox<String> createComboBox(SpecDef specDef, SpecValue specValue) {
+	private JComboBox<String> createComboBox(List<String> choices, SpecValue specValue) {
 		JComboBox<String> combo = new JComboBox<>();
 		combo.addItem("");;
-		specDef.getChoices().forEach(v -> {
+		choices.forEach(v -> {
 			combo.addItem(v);
 		});
 		combo.setSelectedItem(specValue.getString());

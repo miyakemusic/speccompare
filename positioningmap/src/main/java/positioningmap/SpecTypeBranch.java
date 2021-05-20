@@ -52,8 +52,13 @@ public abstract class SpecTypeBranch {
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.MultipleChoice) == 0) {
 			return onMultiple(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
 		}
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.InstrumentType) == 0) {
+			return onInstrumentType(specHolder.getGuarantee(), specHolder.getTypical(), this.specValue);
+		}
 		return false;
 	}
+
+	protected abstract boolean onInstrumentType(SpecValue guarantee, SpecValue typical, SpecValue specValue2);
 
 	protected abstract boolean onThreeDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2);
 

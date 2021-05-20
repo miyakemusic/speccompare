@@ -35,6 +35,10 @@ public abstract class EnableChecker {
 	
 	private Result check2(SpecSheet specSheet, String id, String product) {
 		SpecDef specDef = specSheet.find(id);
+		if (specDef == null) {
+			System.out.println("specDef = null " + id + " product:" + product);
+			return Result.FALSE;
+		}
 		String parentId = specDef.getParentId();
 		if (parentId == null || parentId.isEmpty()) {
 			return Result.NO_PARENT;

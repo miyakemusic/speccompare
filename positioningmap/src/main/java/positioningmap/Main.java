@@ -32,13 +32,21 @@ public class Main {
 		USB3_0,
 	}
 
+	public enum InstrumentType {
+		Standalone_Standard,
+		Standalone_Optional,
+		SubModule,
+		SubModule_Optional,
+		Probe,
+		UseExternal
+	}
 	public enum Better {
 		Higher,
 		Lower, Closer,Wider, Narrower, None
 	}
 	
 	public enum SpecTypeEnum {
-		TwoDmensionalSize, Numeric, Choice, Boolean, Variation, Range, Text, MultipleChoice, ThreemensionalSize
+		InstrumentType, TwoDmensionalSize, Numeric, Choice, Boolean, Variation, Range, Text, MultipleChoice, ThreemensionalSize
 		
 	}
 	public enum Unit {

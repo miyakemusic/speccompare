@@ -29,8 +29,12 @@ class ComponentAndType {
 	public JComponent component;
 	public Class<?> cls;
 }
-public class InputContainer {
 
+public class InputContainer {
+	protected void onChange(String fieldName, String string) {}
+	public JComponent component(String fieldName) {
+		return map.get("set" + toCaptal(fieldName));
+	}
 	private Object object;
 	private Map<String, JComponent> map = new HashMap<>();
 	public InputContainer(Object object) {
@@ -118,6 +122,13 @@ public class InputContainer {
 						});
 					}
 					combo.setSelectedItem(v);
+					combo.addActionListener(new ActionListener() {
+
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							onChange(fieldName, combo.getSelectedItem().toString());
+						}						
+					});
 					return combo;
 				} catch (NoSuchFieldException | SecurityException e) {
 					// TODO Auto-generated catch block
@@ -132,8 +143,7 @@ public class InputContainer {
 		try {
 			Method method = this.object.getClass().getMethod("get" + toCaptal(fieldName));
 			Class cls = method.getReturnType();//.getReturnType().getClass();
-			
-//			Class cls = this.specDef.getClass().getDeclaredField(fieldName).getType();
+
 			if (cls.isEnum()) {
 				return this.createCombo(fieldName);
 			}
@@ -144,7 +154,6 @@ public class InputContainer {
 				return this.createTextField(fieldName);
 			}
 		} catch (SecurityException | NoSuchMethodException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;

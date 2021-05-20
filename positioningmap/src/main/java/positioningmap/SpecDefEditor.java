@@ -11,6 +11,10 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+
+import positioningmap.Main.InstrumentType;
+import positioningmap.Main.SpecTypeEnum;
 
 public class SpecDefEditor extends JDialog {
 
@@ -24,7 +28,19 @@ public class SpecDefEditor extends JDialog {
 		this.setSize(new Dimension(400, 350));
 		this.getContentPane().setLayout(new BorderLayout());
 		
-		inputs = new InputContainer(specDef);;
+		inputs = new InputContainer(specDef) {
+			@Override
+			protected void onChange(String fieldName, String value) {
+				if (fieldName.equals("specType") && value.equals(SpecTypeEnum.InstrumentType.name())) {
+					JComboBox<String> combo = (JComboBox<String>)component("choices");
+					combo.removeAllItems();
+					for (int i = 0; i < InstrumentType.values().length; i++) {
+						combo.addItem(InstrumentType.values()[i].name());
+					}
+					((JTextField)component("name")).setText(SpecTypeEnum.InstrumentType.name());
+				}
+			}
+		};
 		
 		JPanel panel = new JPanel();
 		panel.setLayout(new FlowLayout());
