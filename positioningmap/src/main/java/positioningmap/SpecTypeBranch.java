@@ -6,18 +6,18 @@ import positioningmap.Main.SpecTypeEnum;
 public abstract class SpecTypeBranch {
 
 	private SpecDef specDef;
-	private SpecHolder specHolder;
+	private SpecHolderElement specHolder;
 	private SpecValue specValue;
 
-	public SpecTypeBranch(SpecDef specDef, SpecHolder specHolder) {
+	public SpecTypeBranch(SpecDef specDef, SpecHolderElement element) {
 		this.specDef = specDef;
-		if (specHolder == null) {
+		if (element == null) {
 			return;
 		}
-		this.specHolder = specHolder;
-		this.specValue = specHolder.getGuarantee();
+		this.specHolder = element;
+		this.specValue = element.getGuarantee();
 		if (this.specValue == null) {
-			this.specValue = specHolder.getTypical();
+			this.specValue = element.getTypical();
 		}
 	}
 

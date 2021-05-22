@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -33,10 +34,10 @@ public class Main {
 	}
 
 	public enum InstrumentType {
-		Standalone_Standard,
-		Standalone_Optional,
-		SubModule,
-		SubModule_Optional,
+		NoSupport,
+		Standalone,
+		MainFrame,
+		Module,
 		Probe,
 		UseExternal
 	}
@@ -193,6 +194,16 @@ public class Main {
 			@Override
 			public boolean useCaseFilterEnabeld() {
 				return filterContainer.isUseCaseFilter();
+			}
+
+			@Override
+			public Collection<String> productList() {
+				return specSheet.products().keySet();
+			}
+
+			@Override
+			public Collection<String> conditionList(String productName) {
+				return specSheet.conditionList(productName);
 			}
 
 		};
@@ -486,6 +497,10 @@ public class Main {
 	}
 
 	private String createText(SpecDef spec, SpecHolder specHolder) {
+		if (specHolder == null) {
+			return ""
+					;
+		}
 		return new TextGenerator().generate(spec, specHolder);
 	}
 
@@ -579,7 +594,7 @@ public class Main {
 		
 		ProductSpec maxTester715B = specSheet.addProduct("EXFO", "MaxTester 715B");
 		maxTester715B.guarantee(displayDevice, "LCD");
-		maxTester715B.guarantee(resolutionId, 800, 480);
+		maxTester715B.createGuarantee(resolutionId, 800, 480);
 		maxTester715B.guarantee(lcdSize, 7);
 		
 		maxTester715B.guarantee(usb,  2.0);
@@ -589,7 +604,7 @@ public class Main {
 		maxTester715B.guarantee(batteryType, "lithium-polymer");
 		maxTester715B.guarantee(runtime, 12);
 		
-		maxTester715B.guarantee(powerSupply, 100, 240);
+		maxTester715B.createGuarantee(powerSupply, 100, 240);
 		maxTester715B.guarantee(powerConsumption, 15);
 		
 		maxTester715B.guarantee(w850, false);
@@ -597,16 +612,16 @@ public class Main {
 		maxTester715B.guarantee(w1300, false);
 		
 		maxTester715B.guarantee(w1310, true);
-		maxTester715B.typical(w1310_accuracy, -30, 30);
+		maxTester715B.createTypical(w1310_accuracy, -30, 30);
 		
 		maxTester715B.guarantee(w1550, true);
-		maxTester715B.typical(w1550_accuracy, -30, 30);
+		maxTester715B.createTypical(w1550_accuracy, -30, 30);
 		
 		maxTester715B.guarantee(w1490, false);
 		
 		maxTester715B.guarantee(w1625, false);
 		maxTester715B.guarantee(w1625f, true);
-		maxTester715B.typical(w1625_accuracy, -10, 10);
+		maxTester715B.createTypical(w1625_accuracy, -10, 10);
 		
 		maxTester715B.guarantee(w1650f, false);
 		

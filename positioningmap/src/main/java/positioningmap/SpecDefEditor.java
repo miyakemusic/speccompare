@@ -25,7 +25,7 @@ public class SpecDefEditor extends JDialog {
 		super(parent);
 		
 		this.setLocationRelativeTo(null);
-		this.setSize(new Dimension(400, 350));
+		this.setSize(new Dimension(500, 350));
 		this.getContentPane().setLayout(new BorderLayout());
 		
 		inputs = new InputContainer(specDef) {

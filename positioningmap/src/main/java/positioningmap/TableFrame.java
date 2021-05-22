@@ -80,7 +80,11 @@ interface TableFrameInterface {
 
 	String selectedUseCase();
 
-	boolean useCaseFilterEnabeld();	
+	boolean useCaseFilterEnabeld();
+
+	Collection<String> productList();
+
+	Collection<String> conditionList(String model);	
 }
 
 public abstract class TableFrame extends JFrame {
@@ -516,9 +520,10 @@ public abstract class TableFrame extends JFrame {
 		menuItem.addActionListener(actionListener);
 		return menuItem;
 	}
-	protected void showValueEditor(String model, SpecDef specDef, SpecHolder specValue) {
+	protected void showValueEditor(String model, SpecDef specDef, SpecHolder specHolder) {
 //		if (valueEditorDialog == null) {
-			valueEditorDialog = new ValueEditor(this, model, specDef, specValue);
+			valueEditorDialog = new ValueEditor(this, model, specDef, specHolder, 
+					tableFrameInterface.productList(), tableFrameInterface.conditionList(model));
 			valueEditorDialog.setModal(true);
 //		}
 		valueEditorDialog.setVisible(true);
@@ -535,9 +540,9 @@ public abstract class TableFrame extends JFrame {
 		}
 		else if (col >= 2) {
 			String model = getModel(col);
-			SpecDef ret = getSpecDef(row);
-			SpecHolder specValue = getSpecValue(row, col);	
-			showValueEditor(model, ret, specValue);
+			SpecDef specDef = getSpecDef(row);
+			SpecHolder specHolder = getSpecValue(row, col);	
+			showValueEditor(model, specDef, specHolder);
 		}
 
 	}

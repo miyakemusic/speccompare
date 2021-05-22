@@ -2,10 +2,12 @@ package positioningmap;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
@@ -19,11 +21,16 @@ public class MultipleChoiceUi extends JPanel {
 	public MultipleChoiceUi(List<String> choices, List<String> multiple) {
 		JPanel panel = this;
 		
-		JPanel left = new JPanel();
-		left.setLayout(new BorderLayout());
-		panel.add(left);
+		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+		JPanel addPane = new JPanel();
+		addPane.setLayout(new FlowLayout());
+		panel.add(addPane);
 		JComboBox<String> combo = new JComboBox<>();
-		left.add(combo, BorderLayout.NORTH);
+		addPane.add(combo, BorderLayout.NORTH);
+		JButton addButton = new JButton("Add");
+		addPane.add(addButton);
+
 		choices.forEach(c -> {
 			combo.addItem(c);
 		});
@@ -31,9 +38,9 @@ public class MultipleChoiceUi extends JPanel {
 		area = new MyTextArea();
 		area.setPreferredSize(new Dimension(80, 60));
 		area.addList(multiple);
-		panel.add(new JScrollPane(area));
-		JButton addButton = new JButton("Add");
-		left.add(addButton, BorderLayout.SOUTH);
+		JScrollPane scroll;
+		panel.add(scroll = new JScrollPane(area));
+		scroll.setPreferredSize(new Dimension(400, 80));
 		addButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -49,7 +56,7 @@ public class MultipleChoiceUi extends JPanel {
 				area.delete();
 			}
 		});
-		
+		//this.setPreferredSize(new Dimension(500, 400));
 	}
 
 	public JComponent textArea() {

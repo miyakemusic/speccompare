@@ -4,7 +4,7 @@ import positioningmap.UseCaseDefElement.Level;
 
 public class BasicScoreCalculator {
 
-	public DoubleWrapper calc(SpecDef specDef, SpecHolder specValue, UseCaseDefElement useCaseDefElement) {
+	public DoubleWrapper calc(SpecDef specDef, SpecHolderElement specValue, UseCaseDefElement useCaseDefElement) {
 		DoubleWrapper ret = new DoubleWrapper();
 
 		new SpecTypeBranch(specDef, specValue) {

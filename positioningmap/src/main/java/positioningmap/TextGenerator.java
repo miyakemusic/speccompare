@@ -1,14 +1,27 @@
 package positioningmap;
 
+import positioningmap.Main.InstrumentType;
+
 public class TextGenerator {
 	private String createTextReturnValue = "";
 	public String generate(SpecDef spec, SpecHolder specHolder) {
+		createTextReturnValue = "";
+		specHolder.getSpecs().forEach((condition, element) -> {
+			if (!condition.equals(SpecHolder.DEFAULT)) {
+				createTextReturnValue += ",[" + condition + "]";
+			}
+			generate_one(spec, element);
+		});
 		
-		new SpecTypeBranch(spec, specHolder) {
+		return this.createTextReturnValue;
+	}
+	public String generate_one(SpecDef spec, SpecHolderElement element) {
+		
+		new SpecTypeBranch(spec, element) {
 			@Override
 			protected boolean onTwoDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + " x " + guarantee.getY();
+					createTextReturnValue += guarantee.getX() + " x " + guarantee.getY();
 				}
 				return false;
 			}
@@ -16,7 +29,7 @@ public class TextGenerator {
 			@Override
 			protected boolean onVaridation(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + spec.getUnit();
+					createTextReturnValue += guarantee.getX() + spec.getUnit();
 				}
 				if (typical != null && typical.getDefined()) {
 					if (!createTextReturnValue.isEmpty()) {
@@ -30,7 +43,7 @@ public class TextGenerator {
 			@Override
 			protected boolean onChoice(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getString();
+					createTextReturnValue += guarantee.getString();
 				}
 				return false;
 			}
@@ -38,7 +51,7 @@ public class TextGenerator {
 			@Override
 			protected boolean onRange(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + " to " + guarantee.getY() + spec.getUnit();
+					createTextReturnValue += guarantee.getX() + " to " + guarantee.getY() + spec.getUnit();
 				}
 				if (typical != null && typical.getDefined()) {
 					if (!createTextReturnValue.isEmpty()) {
@@ -52,7 +65,7 @@ public class TextGenerator {
 			@Override
 			protected boolean onNumeric(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX().toString();
+					createTextReturnValue += guarantee.getX().toString();
 				}
 				if (typical != null && typical.getDefined()) {
 					if (!createTextReturnValue.isEmpty()) {
@@ -67,14 +80,14 @@ public class TextGenerator {
 			protected boolean onBoolean(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
 					if (guarantee.getAvailable()) {
-						createTextReturnValue = "Yes";
+						createTextReturnValue += "Yes";
 					}
 					else {
-						createTextReturnValue = "No";
+						createTextReturnValue += "No";
 					}
 				}
 				else {
-					createTextReturnValue = "No";
+					createTextReturnValue += "No";
 				}
 				return false;
 			}
@@ -82,7 +95,7 @@ public class TextGenerator {
 			@Override
 			protected boolean onText(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.text();
+					createTextReturnValue += guarantee.text();
 				}
 				return false;
 			}
@@ -103,7 +116,7 @@ public class TextGenerator {
 			@Override
 			protected boolean onThreeDimensional(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getX() + " x " + guarantee.getY() +  " x " + guarantee.getZ();
+					createTextReturnValue += guarantee.getX() + " x " + guarantee.getY() +  " x " + guarantee.getZ();
 				}
 				return false;
 			}
@@ -111,7 +124,15 @@ public class TextGenerator {
 			@Override
 			protected boolean onInstrumentType(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue = guarantee.getString();
+					createTextReturnValue += guarantee.getString();
+					
+					if (guarantee.getString().equals(InstrumentType.UseExternal.name())) {
+						createTextReturnValue += "(";
+						guarantee.getMultiple().forEach(v -> {
+							createTextReturnValue +=  v + ", ";
+						});
+						createTextReturnValue += ")";
+					}
 				}
 				return false;
 			}

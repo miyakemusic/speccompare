@@ -44,7 +44,7 @@ public abstract class EnableChecker {
 			return Result.NO_PARENT;
 		}
 		else {
-			if (!specSheet.getValue(parentId, product).getGuarantee().getAvailable()) {
+			if (!specSheet.getValue(parentId, product).guarantee().getAvailable()) {
 				this.ret  = false;
 				return Result.FALSE;
 			}		

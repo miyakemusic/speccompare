@@ -87,12 +87,7 @@ public class SpecSheet {
 		return this.categories.get(category).getSpecs();
 	}
 
-	private SpecInterface specInterface = new SpecInterface() {
-		@Override
-		public SpecTypeEnum type(String id) {
-			return find(id).getSpecType();
-		}
-
+	private SpecCategoryInterface specInterface = new SpecCategoryInterface() {
 		@Override
 		public String category(SpecCategory specCategory) {
 			for (Map.Entry<String, SpecCategory> entry : categories.entrySet()) {
@@ -113,11 +108,10 @@ public class SpecSheet {
 
 			categories.get(category).add(specDef);	
 		}
-
 	};
-	
+
 	public ProductSpec addProduct(String vendorName, String modelName) {
-		ProductSpec newSpec = new ProductSpec(/*modelName, */specInterface);
+		ProductSpec newSpec = new ProductSpec();
 		productSpecs.put(modelName, newSpec);
 		return newSpec;
 	}
@@ -151,7 +145,7 @@ public class SpecSheet {
 	}
 
 	public void init() {
-		this.productSpecs.values().forEach(v ->{v.init(specInterface);});
+		this.productSpecs.values().forEach(v ->{v.init();});
 		this.categories.values().forEach(v -> { v.init(specInterface);});
 	}
 
@@ -172,9 +166,9 @@ public class SpecSheet {
 
 	public SpecHolder getValue(String id, String model) {
 		ProductSpec spec = this.productSpecs.get(model);
-		SpecHolder specHolder = spec.getValues().get(id);
+		SpecHolder specHolder = spec.specHolder(id);
 		if (specHolder == null) {
-			spec.getValues().put(id, specHolder = new SpecHolder());
+
 		}
 		return specHolder;
 	}
@@ -338,12 +332,9 @@ public class SpecSheet {
 		this.getValue(id, model).clearValue();
 	}
 
+	public Collection<String> conditionList(String productName) {
+		return this.productSpecs.get(productName).getConditions();
+	}
 
-}
-interface SpecInterface {
-	SpecTypeEnum type(String id);
 
-	String category(SpecCategory specCategory);
-
-	void onCategoryChange(SpecCategory specCategory, String category, SpecDef specDef);
 }

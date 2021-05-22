@@ -7,16 +7,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import positioningmap.Main.Better;
 import positioningmap.Main.SpecTypeEnum;
-
+interface SpecCategoryInterface {
+	String category(SpecCategory specCategory);
+	void onCategoryChange(SpecCategory specCategory, String category, SpecDef specDef);
+}
 public class SpecCategory {
 	@JsonIgnore
-	private SpecInterface specInterface;
+	private SpecCategoryInterface specCategoryInterface;
 	private Map<String, SpecDef> specs = new LinkedHashMap<>();
 
 	public SpecDef createSpec(String subSpec, SpecTypeEnum specType, String unit, Better better) {
 		SpecDef spec = new SpecDef(specType, unit, better);
 		this.specs.put(subSpec, spec);
-		spec.setSpecInterface(specDefInterface);
+		spec.setSpecDefInterface(specDefInterface);
 		return spec;
 	}
 	public Map<String, SpecDef> getSpecs() {
@@ -31,7 +34,7 @@ public class SpecCategory {
 
 		@Override
 		public String category(SpecDef specDef) {
-			return specInterface.category(SpecCategory.this);
+			return specCategoryInterface.category(SpecCategory.this);
 		}
 
 		@Override
@@ -46,8 +49,8 @@ public class SpecCategory {
 
 		@Override
 		public void category(SpecDef specDef, String category) {
-			if (!category.equals(specInterface.category(SpecCategory.this))) {
-				specInterface.onCategoryChange(SpecCategory.this, category, specDef);
+			if (!category.equals(specCategoryInterface.category(SpecCategory.this))) {
+				specCategoryInterface.onCategoryChange(SpecCategory.this, category, specDef);
 				for (String key : specs.keySet()) {
 					if (specs.get(key).equals(specDef)) {
 						specs.remove(key);
@@ -83,13 +86,13 @@ public class SpecCategory {
 		}
 	};
 	
-	public void init(SpecInterface specInterface) {
-		this.specInterface = specInterface;
-		this.specs.values().forEach(v -> v.setSpecInterface(specDefInterface));
+	public void init(SpecCategoryInterface specInterface) {
+		this.specCategoryInterface = specInterface;
+		this.specs.values().forEach(v -> v.setSpecDefInterface(specDefInterface));
 	}
 	public void add(SpecDef specDef) {
 		this.specs.put(specDef.getName(), specDef);
-		specDef.setSpecInterface(specDefInterface);
+		specDef.setSpecDefInterface(specDefInterface);
 	}
 }
 

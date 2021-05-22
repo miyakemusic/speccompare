@@ -4,19 +4,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import positioningmap.Main.SpecTypeEnum;
+import java.util.Set;
 
 public class ProductSpec implements Cloneable {
 
 	private Map<String, SpecHolder> values = new HashMap<>();
-	private SpecInterface specInterface;
+	private Set<String> conditions = new LinkedHashSet<String>();
 	
-
+	private SpecHolderInterface specHolderInterface = new SpecHolderInterface() {
+		@Override
+		public void onAddCondition(String string) {
+			conditions.add(string);
+		}
+	};
+	
 	public Map<String, SpecHolder> getValues() {
 		return values;
 	}
@@ -26,35 +30,30 @@ public class ProductSpec implements Cloneable {
 	}
 
 	public ProductSpec() {}
-	
-	public ProductSpec(/*String productName, */SpecInterface specInterface2) {
-//		this.productName = productName;
-		this.specInterface = specInterface2;
-	}
 
 	private void guarantee(String id, SpecValue v) {
 		SpecHolder specHolder = specHolder(id);
 		specHolder.guarantee(v);		
 	}
 	
-	private void typical(String id, SpecValue v) {
+	private void createTypical(String id, SpecValue v) {
 		SpecHolder specHolder = specHolder(id);
 		specHolder.typical(v);		
 	}
 
 	public void typical(String id, double v) {
-		typical(id, new SpecValue(v));
+		createTypical(id, new SpecValue(v));
 	}
 	
-	private SpecHolder specHolder(String id) {
+	SpecHolder specHolder(String id) {
 		if (!this.values.containsKey(id)) {
-			this.values.put(id, new SpecHolder());
+			this.values.put(id, new SpecHolder(specHolderInterface));
 		}
 		SpecHolder specHolder = this.values.get(id);
 		return specHolder;
 	}
 	
-	public void guarantee(String id, double x, double y) {
+	public void createGuarantee(String id, double x, double y) {
 		guarantee(id, new SpecValue(x, y));
 	}
 
@@ -70,70 +69,14 @@ public class ProductSpec implements Cloneable {
 		guarantee(id, new SpecValue(string));
 	}
 
-	public String value(String id) {
-		if (this.values.containsKey(id) ) {
-			String ret = "";
-			
-			SpecValue guarantee = this.values.get(id).getGuarantee();
-			if (guarantee.getDefined()) {
-				if (guarantee != null) {
-					ret += generateText(id, guarantee);
-				}
-			}
-
-			String g = "";
-			SpecValue typical = this.values.get(id).getTypical();
-			if (typical.getDefined()) {
-				if (typical != null) {
-					g += generateText(id, typical) + "(Typ.)";
-				}
-			}
-			if (!ret.isEmpty() && !g.isEmpty()) {
-				ret = ret + " / " + g;
-			}
-			else {
-				ret = ret + g;
-			}
-			return ret;
-		}
-		return "---";
-	}
-
-	private String generateText(String id, SpecValue guarantee) {
-		SpecValue specValue = guarantee;
-		if (this.specInterface.type(id).compareTo(SpecTypeEnum.Range) == 0) {
-//			if (Math.abs(specValue.getX()) == Math.abs(specValue.getY())) {
-//				return "Å}" + Math.abs(specValue.getX());
-//			}
-			return specValue.getX() + " ... " + specValue.getY();
-		}
-		else if (this.specInterface.type(id).compareTo(SpecTypeEnum.Variation) == 0) {
-			return "Å}" + specValue.getX();
-		}
-		else if (this.specInterface.type(id).compareTo(SpecTypeEnum.TwoDmensionalSize) == 0) {
-			return specValue.getX() + " x " + specValue.getY();
-		}
-		else {
-			return specValue.text();
-		}
-	}
-
-	public void typical(String id, double x, double y) {
-		typical(id, new SpecValue(x, y));
-	}
-
-	@JsonIgnore
-	public void init(SpecInterface specInterface) {
-		this.specInterface = specInterface;
+	public void createTypical(String id, double x, double y) {
+		createTypical(id, new SpecValue(x, y));
 	}
 
 	@Override
 	public ProductSpec clone() {
 		try {
 			ProductSpec ret = (ProductSpec)super.clone();
-			ret.specInterface = this.specInterface;
-//			ret.productName = new String(this.productName);
-		
 			ret.values = new LinkedHashMap<String, SpecHolder>();
 			for (Map.Entry<String, SpecHolder> entry: this.values.entrySet()) {
 				ret.values.put(entry.getKey(), entry.getValue().clone());
@@ -158,13 +101,27 @@ public class ProductSpec implements Cloneable {
 		});
 		
 		values.forEach((id, v) -> {
-			SpecValue value = v.getTypical();
+			SpecValue value = v.typical();
 			if (value == null) {
 				return;
 			}
 			if (value.initialized()) {
 				value.setDefined(false);
 			}
+		});
+	}
+
+	public void setConditions(Set<String> conditions) {
+		this.conditions = conditions;
+	}
+
+	public Collection<String> getConditions() {
+		return conditions;
+	}
+
+	public void init() {
+		this.values.forEach((id, specHolder) -> {
+			specHolder.setSpecHolderInterface(specHolderInterface);
 		});
 	}
 }

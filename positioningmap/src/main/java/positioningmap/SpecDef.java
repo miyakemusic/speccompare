@@ -19,7 +19,7 @@ public class SpecDef {
 	private String parentId = "";
 	
 	@JsonIgnore
-	private SpecDefInterface specInterface;
+	private SpecDefInterface specDefInterface;
 	
 	public SpecDef() {}
 	public SpecDef(SpecTypeEnum specType, String unit, Better better) {
@@ -89,33 +89,33 @@ public class SpecDef {
 	
 	@JsonIgnore
 	public String getCategory() {
-		return specInterface.category(this);
+		return specDefInterface.category(this);
 	}
 	
 	@JsonIgnore
 	public void setCategory(String category) {
-		this.specInterface.category(this, category);
+		this.specDefInterface.category(this, category);
 	}
 	
 	
-	public void setSpecInterface(SpecDefInterface specDefInterface) {
-		this.specInterface = specDefInterface;
+	public void setSpecDefInterface(SpecDefInterface specDefInterface) {
+		this.specDefInterface = specDefInterface;
 	}
 	
 	@JsonIgnore
 	public String getName() {
-		return specInterface.name(this);
+		return specDefInterface.name(this);
 	}
 	
 	@JsonIgnore
 	public void setName(String name) {
-		this.specInterface.name(this, name);
+		this.specDefInterface.name(this, name);
 	}
 	public void moveUp() {
-		specInterface.moveUp(this);
+		specDefInterface.moveUp(this);
 	}
 	public void moveDown() {
-		specInterface.moveDown(this);
+		specDefInterface.moveDown(this);
 	}
 
 }

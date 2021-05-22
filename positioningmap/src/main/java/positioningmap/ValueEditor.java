@@ -8,10 +8,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -19,6 +22,7 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
@@ -33,43 +37,53 @@ public class ValueEditor extends JDialog {
 	private Map<LocalSpecKey, JComponent> inputs = new HashMap<>();
 	private boolean ok = false;
 	
-	public ValueEditor(JFrame parent, String model, SpecDef specDef, SpecHolder specHolder) {
+	public ValueEditor(JFrame parent, String productName, SpecDef specDef, SpecHolder specHolder, 
+			Collection<String> productList, Collection<String> conditions) {
 		super(parent);
 		setLocationRelativeTo(null);
 		int height = 0;
-		this.setTitle(model + " " + specDef.getCategory() + " - " + specDef.getName());
+		this.setTitle(productName + " " + specDef.getCategory() + " - " + specDef.getName());
 		
 		this.getContentPane().setLayout(new BorderLayout());
 				
 		JPanel base = new JPanel();
 		this.getContentPane().add(base, BorderLayout.CENTER);
-		//base.setLayout(new GridLayout(3, 1));
 		base.setLayout(new FlowLayout());
+
+		JButton addCondition = new JButton("Add Condition");
+		base.add(addCondition);
+		JPanel mainPanel = new JPanel();
+		base.add(mainPanel);
+		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
+		
+		addCondition.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				//String value = JOptionPane.showInputDialog(this, "Condition Name");
+				MyComboDialog dlg = new MyComboDialog(conditions) {
+
+					@Override
+					protected void onOk(String value) {
+						specHolder.addCondition(value);
+						mainPanel.removeAll();
+						inputs.clear();
+						createMainPane(specDef, specHolder, productList, mainPanel);
+					}
+					
+				};
+				dlg.setModal(true);
+				dlg.setVisible(true);
+			}
+		});
+
 		
 		JPanel title = new JPanel();
 		this.getContentPane().add(title, BorderLayout.NORTH);
 		
-		title.add(new JLabel("<HTML>" + model + " / " + specDef.getCategory() + " - " + specDef.getName() + "</HTML>"));
+		title.add(new JLabel("<HTML>" + productName + " / " + specDef.getCategory() + " - " + specDef.getName() + "</HTML>"));
+
+		height += createMainPane(specDef, specHolder, productList, mainPanel);
 				
-		JPanel guarantee = new JPanel();
-		base.add(guarantee);	
-		guarantee.setLayout(new FlowLayout());
-		guarantee.setBorder(new TitledBorder("Guarantee"));
-		createArea(specDef, specHolder.getGuarantee(), guarantee);
-		height += guarantee.getPreferredSize().height;
-		
-		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.Range) == 0)
-				|| (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
-			JPanel typical = new JPanel();
-			base.add(typical);	
-			typical.setLayout(new FlowLayout());
-			typical.setBorder(new TitledBorder("Typical"));
-			createArea(specDef, specHolder.getTypical(), typical);
-			height += typical.getPreferredSize().height;
-		}
-		
-//		this.pack();
-		
 		JPanel control = new JPanel();
 		this.getContentPane().add(control, BorderLayout.SOUTH);
 		control.setLayout(new FlowLayout());
@@ -79,7 +93,7 @@ public class ValueEditor extends JDialog {
 		control.add(cancelButton);
 		height += control.getPreferredSize().height;
 		
-		base.setPreferredSize(new Dimension(600, height + 50));
+		base.setPreferredSize(new Dimension(600, height + 80));
 		this.pack();
 		
 		okButton.addActionListener(new ActionListener() {
@@ -146,22 +160,68 @@ public class ValueEditor extends JDialog {
 		});
 	}
 
-	private void createArea(SpecDef specDef, SpecValue specValue, JPanel panel) {
+	private int createMainPane(SpecDef specDef, SpecHolder specHolder, Collection<String> productList,
+			JPanel mainPanel) {
+		int height = 0;
+		for (String condition : specHolder.getSpecs().keySet()) {
+			SpecHolderElement element = specHolder.getSpecs().get(condition);
+			height += createOneSpec(specDef, condition, element, productList, mainPanel);
+		}
+		return height;
+	}
+
+	private int createOneSpec(SpecDef specDef, String condition, SpecHolderElement element, Collection<String> productList,
+			JPanel base) {
+		
+		int height = 0;
+		JPanel condPane = new JPanel();
+		base.add(condPane);
+		condPane.setLayout(new BoxLayout(condPane, BoxLayout.Y_AXIS));
+		condPane.setBorder(new TitledBorder(condition));
+		JPanel guarantee = new JPanel();
+		condPane.add(guarantee);	
+		guarantee.setLayout(new FlowLayout());
+		guarantee.setBorder(new TitledBorder("Guarantee"));
+		createArea(specDef, element.getGuarantee(), productList, guarantee);
+		height += guarantee.getPreferredSize().height;
+		
+		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.Range) == 0)
+				|| (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
+			JPanel typical = new JPanel();
+			condPane.add(typical);	
+			typical.setLayout(new FlowLayout());
+			typical.setBorder(new TitledBorder("Typical"));
+			createArea(specDef, element.getTypical(), productList, typical);
+			height += typical.getPreferredSize().height;
+		}
+		
+		
+		{
+			JPanel commentPanel = new JPanel();
+			commentPanel.setLayout(new FlowLayout());
+			condPane.add(commentPanel);
+			commentPanel.add(new JLabel("Comment:"));
+			commentPanel.add(createTextField(element.getGuarantee(), "Comment"));			
+		}
+		return height;
+	}
+
+	private void createArea(SpecDef specDef, SpecValue specValue, Collection<String> productList, JPanel panel) {
 		if ((specDef.getSpecType().compareTo(SpecTypeEnum.Numeric) == 0) 
 				|| (specDef.getSpecType().compareTo(SpecTypeEnum.Variation) == 0)) {
-			panel.setPreferredSize(new Dimension(200, 80));
+			panel.setPreferredSize(new Dimension(500, 80));
 			panel.add(createTextField(specValue, "X"));
 			panel.add(new JLabel(specDef.getUnit()));
 		}
 		else if ((specDef.getSpecType().compareTo(SpecTypeEnum.Range) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.TwoDmensionalSize) == 0)) {
-			panel.setPreferredSize(new Dimension(300, 80));
+			panel.setPreferredSize(new Dimension(500, 80));
 			panel.add(createTextField(specValue, "X"));
 			panel.add(new JLabel(" - "));
 			panel.add(createTextField(specValue, "Y"));
 			panel.add(new JLabel(specDef.getUnit()));			
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.ThreemensionalSize) == 0) {
-			panel.setPreferredSize(new Dimension(300, 80));
+			panel.setPreferredSize(new Dimension(500, 80));
 			panel.add(createTextField(specValue, "X"));
 			panel.add(new JLabel(" x "));
 			panel.add(createTextField(specValue, "Y"));
@@ -169,37 +229,47 @@ public class ValueEditor extends JDialog {
 			panel.add(createTextField(specValue, "Z"));
 			panel.add(new JLabel(specDef.getUnit()));
 		}
-		else if ((specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0) || (specDef.getSpecType().compareTo(SpecTypeEnum.InstrumentType) == 0)) {
-			panel.setPreferredSize(new Dimension(200, 80));
+		else if ((specDef.getSpecType().compareTo(SpecTypeEnum.Choice) == 0)) {
+			panel.setPreferredSize(new Dimension(500, 80));
 			JComboBox<String> combo = createComboBox(specDef.getChoices(), specValue);
 			panel.add(combo);
 			
 			inputs.put(new LocalSpecKey(specValue, "String"), combo);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Boolean) == 0) {
-			panel.setPreferredSize(new Dimension(200, 80));
+			panel.setPreferredSize(new Dimension(500, 80));
 			JCheckBox check = new JCheckBox();
 			check.setSelected(specValue.getAvailable());
 			inputs.put(new LocalSpecKey(specValue, "Available"), check);
 			panel.add(check);
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.Text) == 0) {
-			panel.setPreferredSize(new Dimension(200, 80));
+			panel.setPreferredSize(new Dimension(500, 80));
 			panel.add(createTextField(specValue, "String"));
 			panel.add(new JLabel(specDef.getUnit()));			
 		}
 		else if (specDef.getSpecType().compareTo(SpecTypeEnum.MultipleChoice) == 0) {
-			panel.setPreferredSize(new Dimension(300, 150));
+			panel.setPreferredSize(new Dimension(500, 200));
 			
 			MultipleChoiceUi multiplePane = new MultipleChoiceUi(specDef.getChoices(), specValue.getMultiple());
 			panel.add(multiplePane);
 
 			inputs.put(new LocalSpecKey(specValue, "Multiple"), multiplePane.textArea());	
 		}
-		
-		{
-			panel.add(new JLabel("Comment:"));
-			panel.add(createTextField(specValue, "Comment"));			
+		else if (specDef.getSpecType().compareTo(SpecTypeEnum.InstrumentType) == 0) {
+			panel.setPreferredSize(new Dimension(500, 200));
+			JPanel instrumentTypePane = new JPanel();
+			panel.add(instrumentTypePane);
+			instrumentTypePane.setLayout(new BoxLayout(instrumentTypePane, BoxLayout.Y_AXIS));
+
+			JComboBox<String> combo = createComboBox(specDef.getChoices(), specValue);
+			instrumentTypePane.add(combo);
+			
+			inputs.put(new LocalSpecKey(specValue, "String"), combo);	
+			
+			MultipleChoiceUi multiplePane = new MultipleChoiceUi(new ArrayList<String>(productList), specValue.getMultiple());
+			instrumentTypePane.add(multiplePane);
+			inputs.put(new LocalSpecKey(specValue, "Multiple"), multiplePane.textArea());	
 		}
 	}
 

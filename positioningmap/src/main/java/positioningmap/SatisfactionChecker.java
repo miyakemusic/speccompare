@@ -34,16 +34,16 @@ public abstract class SatisfactionChecker {
 			if (specHolder == null) {
 				return failResult;
 			}
-			SpecValue specValue = specHolder.getGuarantee();
+			SpecValue specValue = specHolder.guarantee();
 			if (specValue == null) {
-				specValue = specHolder.getTypical();
+				specValue = specHolder.typical();
 			}
 			SpecDef specDef = specSheet().find(id);
 			if (specDef == null) {
 //				System.out.println();
 			}
 
-			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specHolder, useCaseDefE);
+			DoubleWrapper ret = new BasicScoreCalculator().calc(specDef, specHolder.defaultSpec(), useCaseDefE);
 			if (ret.value >= 0.0) {
 				return ResultLevelEnum.Qualify;
 			}

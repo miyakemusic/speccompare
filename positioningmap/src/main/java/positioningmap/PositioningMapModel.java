@@ -189,9 +189,9 @@ public class PositioningMapModel {
 	}
 
 	private SpecValue getValue(SpecHolder specX) {
-		SpecValue ret = specX.getGuarantee();
+		SpecValue ret = specX.guarantee();
 		if (!ret.getDefined()) {
-			ret = specX.getTypical();
+			ret = specX.typical();
 		}
 		return ret;
 	}

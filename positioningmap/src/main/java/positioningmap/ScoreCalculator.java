@@ -73,7 +73,7 @@ public class ScoreCalculator {
 					}
 				}
 				
-				boolean b = new BasicScoreCalculator().calc(specDef, productSpec.getValues().get(specDef.id()), useCaseDefElement).value >= 0;
+				boolean b = new BasicScoreCalculator().calc(specDef, productSpec.getValues().get(specDef.id()).defaultSpec(), useCaseDefElement).value >= 0;
 				boolean enabled = true;
 				if ((useCaseDefElement.getLevel().compareTo(Level.Mandatory) == 0) && !b) {
 					enabled = false;
@@ -127,15 +127,15 @@ public class ScoreCalculator {
 //			System.out.println(productName + "::calcNew::" + specDef.getName() + " is null");
 			return null;
 		}
-		SpecValue specValue = specHolder.getGuarantee();
+		SpecValue specValue = specHolder.guarantee();
 		if ((specValue == null) || !specValue.getDefined()) {
-			specValue = specHolder.getTypical();
+			specValue = specHolder.typical();
 		}
 		return specValue;
 	}
 		
 	private DoubleWrapper calcScore(SpecDef specDef, SpecHolder specHolder, UseCaseDefElement useCaseDefElement) {
-		return new BasicScoreCalculator().calc(specDef, specHolder, useCaseDefElement);
+		return new BasicScoreCalculator().calc(specDef, specHolder.defaultSpec(), useCaseDefElement);
 	}
 
 	public CalcResult calc(String product) {
