@@ -68,7 +68,7 @@ public class SpecHolder implements Cloneable {
 			this.specs.forEach((k,v) -> {
 				ret.specs.put(k, v.clone());
 			});
-			ret.specHolderInterface = this.specHolderInterface;
+			
 			return ret;
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
@@ -93,6 +93,9 @@ public class SpecHolder implements Cloneable {
 	@JsonIgnore
 	public void setSpecHolderInterface(SpecHolderInterface specHolderInterface) {
 		this.specHolderInterface = specHolderInterface;
+	}
+	public void removeCondition(String condition) {
+		this.specs.remove(condition);
 	}
 	
 }

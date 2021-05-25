@@ -81,6 +81,7 @@ public class ProductSpec implements Cloneable {
 			for (Map.Entry<String, SpecHolder> entry: this.values.entrySet()) {
 				ret.values.put(entry.getKey(), entry.getValue().clone());
 			}
+			ret.conditions = new LinkedHashSet<String>(this.conditions);
 			return ret;
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
@@ -123,5 +124,14 @@ public class ProductSpec implements Cloneable {
 		this.values.forEach((id, specHolder) -> {
 			specHolder.setSpecHolderInterface(specHolderInterface);
 		});
+	}
+
+	public void copy(ProductSpec from, String id) {
+		SpecHolder specHolder = from.getValues().get(id).clone();
+		this.values.put(id, specHolder);
+		specHolder.setSpecHolderInterface(specHolderInterface);
+		specHolder.getSpecs().forEach(((condition, element) -> {
+			specHolderInterface.onAddCondition(condition);
+		}));
 	}
 }

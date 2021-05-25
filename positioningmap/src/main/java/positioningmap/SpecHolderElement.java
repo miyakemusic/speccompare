@@ -1,6 +1,6 @@
 package positioningmap;
 
-public class SpecHolderElement {
+public class SpecHolderElement implements Cloneable {
 	private SpecValue guarantee = new SpecValue();
 	private SpecValue typical = new SpecValue();
 	

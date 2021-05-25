@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.BoxLayout;
@@ -13,12 +14,13 @@ import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 
 public class MultipleChoiceUi extends JPanel {
 
 	private MyTextArea area;
 
-	public MultipleChoiceUi(List<String> choices, List<String> multiple) {
+	public MultipleChoiceUi(Collection<String> choices, Collection<String> multiple) {
 		JPanel panel = this;
 		
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -36,11 +38,13 @@ public class MultipleChoiceUi extends JPanel {
 		});
 //		panel.setPreferredSize(new Dimension(100, 100));
 		area = new MyTextArea();
-		area.setPreferredSize(new Dimension(80, 60));
+		area.setMaximumSize(new Dimension(200, 100));
+//		area.setSize(new Dimension(200, 60));
 		area.addList(multiple);
+		
 		JScrollPane scroll;
 		panel.add(scroll = new JScrollPane(area));
-		scroll.setPreferredSize(new Dimension(400, 80));
+		scroll.setPreferredSize(new Dimension(200, 80));
 		addButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {

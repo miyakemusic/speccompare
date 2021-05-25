@@ -97,7 +97,7 @@ public abstract class TableFrame extends JFrame {
 	abstract void save();
 	abstract void newProduct(String value);
 	abstract void newItem();
-	abstract void onUpdate();
+	abstract void onUpdate(String productName);
 	abstract SpecDef getSpecDef(int row);
 	abstract SpecHolder getSpecValue(int row, int col);
 	abstract String getModel(int col);
@@ -113,6 +113,7 @@ public abstract class TableFrame extends JFrame {
 	abstract void clearValue(int[] row, int[] columns);
 	abstract void onPositioningMap();
 	abstract void onConifgPositioningMap();
+	abstract Collection<String> productCondition(String name);
 	
 	private JTable table = null;
 	protected String selecteHeaderName;
@@ -366,6 +367,8 @@ public abstract class TableFrame extends JFrame {
 		
 		table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setCellSelectionEnabled(true);
+		
+		
 		table.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -386,15 +389,20 @@ public abstract class TableFrame extends JFrame {
 				else if (e.getClickCount() == 1) {
 					String val = table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()).toString();
 					if (val != null && val.startsWith("http")) {
-						try {
-							Desktop.getDesktop().browse(new URI(val));
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						} catch (URISyntaxException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									Desktop.getDesktop().browse(new URI(val));
+								} catch (IOException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								} catch (URISyntaxException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+							}});
+
 					}
 				}
 			}
@@ -503,7 +511,28 @@ public abstract class TableFrame extends JFrame {
 
 			}
 		});
+		
+		JMenuItem menuConditions = new JMenuItem("Conditions");
+		popupHeader.add(menuConditions);
+		menuConditions.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showCondition(selecteHeaderName);
+			}
+		});
 
+	}
+	
+	protected void showCondition(String selecteHeaderName2) {
+		Collection<String> conditions = productCondition(selecteHeaderName2);
+		MultipleChoiceUi ui =new MultipleChoiceUi(conditions, conditions) {
+			
+		};
+		JFrame frame = new JFrame();
+		frame.setSize(new Dimension(500, 300));
+		frame.getContentPane().setLayout(new BorderLayout());
+		frame.getContentPane().add(ui, BorderLayout.CENTER);
+		frame.setVisible(true);
 	}
 	
 	protected void pastCell() {
@@ -528,7 +557,7 @@ public abstract class TableFrame extends JFrame {
 //		}
 		valueEditorDialog.setVisible(true);
 		if (valueEditorDialog.ok()) {
-			onUpdate();
+			onUpdate(model);
 		}
 	}
 	private void doEdit(JTable table, TableFrameInterface tableFrameInterface) {
@@ -546,9 +575,9 @@ public abstract class TableFrame extends JFrame {
 		}
 
 	}
-	private void showDefEditor(SpecDef spedDef, TableFrameInterface tableFrameInterface) {
+	private void showDefEditor(SpecDef specDef, TableFrameInterface tableFrameInterface) {
 //		if (defEditorDialog == null) {
-			defEditorDialog = new SpecDefEditor(this, spedDef, 
+			defEditorDialog = new SpecDefEditor(this, specDef, 
 					tableFrameInterface.categories(), 
 					tableFrameInterface.units(),
 					tableFrameInterface.parents());
@@ -556,7 +585,7 @@ public abstract class TableFrame extends JFrame {
 //		}
 		defEditorDialog.setVisible(true);
 		if (defEditorDialog.ok()) {
-			onUpdate();
+			onUpdate(specDef.getName());
 		}
 	}
 

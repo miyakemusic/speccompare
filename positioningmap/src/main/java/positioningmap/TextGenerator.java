@@ -126,13 +126,13 @@ public class TextGenerator {
 				if (guarantee != null && guarantee.getDefined()) {
 					createTextReturnValue += guarantee.getString();
 					
-					if (guarantee.getString().equals(InstrumentType.UseExternal.name())) {
+//					if (guarantee.getString().equals(InstrumentType.UseExternal.name())) {
 						createTextReturnValue += "(";
 						guarantee.getMultiple().forEach(v -> {
 							createTextReturnValue +=  v + ", ";
 						});
 						createTextReturnValue += ")";
-					}
+//					}
 				}
 				return false;
 			}

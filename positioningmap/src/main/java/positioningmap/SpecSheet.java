@@ -238,10 +238,11 @@ public class SpecSheet {
 		ProductSpec from = this.productSpecs.get(fromColumn);
 		ProductSpec to = this.productSpecs.get(toColumn);
 		for (String id : fromRows) {
-			SpecHolder sh = from.getValues().get(id);
-			if (sh != null) {
-				to.getValues().put(id, sh.clone());
-			}
+			to.copy(from, id);
+//			SpecHolder sh = from.getValues().get(id);
+//			if (sh != null) {
+//				to.getValues().put(id, sh.clone());
+//			}
 		}
 	}
 
@@ -335,6 +336,5 @@ public class SpecSheet {
 	public Collection<String> conditionList(String productName) {
 		return this.productSpecs.get(productName).getConditions();
 	}
-
 
 }

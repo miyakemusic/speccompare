@@ -253,7 +253,8 @@ public class Main {
 			}
 
 			@Override
-			void onUpdate() {
+			void onUpdate(String productName) {
+				new SpecLinker(specSheet, productName);
 				updateModel(specSheet, model, true);
 			}
 
@@ -361,6 +362,11 @@ public class Main {
 					}
 				}
 				updateModel(specSheet, model, false);
+			}
+
+			@Override
+			Collection<String> productCondition(String name) {
+				return specSheet.conditionList(name);
 			}
 
 		}.setVisible(true);

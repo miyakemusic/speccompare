@@ -1,7 +1,10 @@
 package positioningmap;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -15,9 +18,8 @@ public class SpecValue implements Cloneable {
 	private Boolean available = false;
 	private String string = "";
 	private Boolean defined = false;
-	private List<String> multiple = new ArrayList<>();
+	private Set<String> multiple = new LinkedHashSet<>();
 	private String comment;
-	
 //	@JsonIgnore
 //	private boolean init;
 //	@JsonIgnore
@@ -146,6 +148,7 @@ public class SpecValue implements Cloneable {
 		else {
 			this.setDefined(true);
 		}
+
 	}
 
 	public void setY(Double y) {
@@ -164,11 +167,11 @@ public class SpecValue implements Cloneable {
 	}
 
 	
-	public List<String> getMultiple() {
+	public Set<String> getMultiple() {
 		return multiple;
 	}
 
-	public void setMultiple(List<String> multiple) {
+	public void setMultiple(Set<String> multiple) {
 		this.multiple = multiple;
 		this.updateDefined();
 	}
@@ -182,7 +185,7 @@ public class SpecValue implements Cloneable {
 			ret.string = new String(this.string);
 			ret.x = new Double(this.x);
 			ret.y = new Double(this.y);
-			ret.multiple = new ArrayList<String>(this.multiple);
+			ret.multiple = new LinkedHashSet<String>(this.multiple);
 			
 			return ret;
 		} catch (CloneNotSupportedException e) {

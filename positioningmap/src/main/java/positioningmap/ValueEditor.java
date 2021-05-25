@@ -11,8 +11,10 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -24,6 +26,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.border.TitledBorder;
 
@@ -36,6 +39,7 @@ public class ValueEditor extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private Map<LocalSpecKey, JComponent> inputs = new HashMap<>();
 	private boolean ok = false;
+	private JPanel mainPanel;
 	
 	public ValueEditor(JFrame parent, String productName, SpecDef specDef, SpecHolder specHolder, 
 			Collection<String> productList, Collection<String> conditions) {
@@ -52,7 +56,7 @@ public class ValueEditor extends JDialog {
 
 		JButton addCondition = new JButton("Add Condition");
 		base.add(addCondition);
-		JPanel mainPanel = new JPanel();
+		mainPanel = new JPanel();
 		base.add(mainPanel);
 		mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 		
@@ -65,9 +69,7 @@ public class ValueEditor extends JDialog {
 					@Override
 					protected void onOk(String value) {
 						specHolder.addCondition(value);
-						mainPanel.removeAll();
-						inputs.clear();
-						createMainPane(specDef, specHolder, productList, mainPanel);
+						updateMainPane(specDef, specHolder, productList);
 					}
 					
 				};
@@ -142,6 +144,10 @@ public class ValueEditor extends JDialog {
 							Method method = SpecValue.class.getMethod("set" + key.field, new Class[]{ List.class });
 							method.invoke(specValue, list);
 						}
+						else if (SpecValue.class.getDeclaredField(key.field.toLowerCase()).getType().equals(Set.class)) {
+							Method method = SpecValue.class.getMethod("set" + key.field, new Class[]{ Set.class });
+							method.invoke(specValue, new LinkedHashSet<String>(list));
+						}
 					} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
 							| SecurityException | NoSuchMethodException | InvocationTargetException e1) {
 						e1.printStackTrace();
@@ -164,20 +170,31 @@ public class ValueEditor extends JDialog {
 			JPanel mainPanel) {
 		int height = 0;
 		for (String condition : specHolder.getSpecs().keySet()) {
-			SpecHolderElement element = specHolder.getSpecs().get(condition);
-			height += createOneSpec(specDef, condition, element, productList, mainPanel);
+			//SpecHolderElement element = specHolder.getSpecs().get(condition);
+			height += createOneSpec(specDef, condition, specHolder, productList, mainPanel);
 		}
 		return height;
 	}
 
-	private int createOneSpec(SpecDef specDef, String condition, SpecHolderElement element, Collection<String> productList,
+	private int createOneSpec(SpecDef specDef, String condition, SpecHolder specHolder, Collection<String> productList,
 			JPanel base) {
 		
+		SpecHolderElement element  = specHolder.getSpecs().get(condition);
 		int height = 0;
 		JPanel condPane = new JPanel();
 		base.add(condPane);
 		condPane.setLayout(new BoxLayout(condPane, BoxLayout.Y_AXIS));
 		condPane.setBorder(new TitledBorder(condition));
+		
+		JButton removeButton = new JButton("Remove");
+		condPane.add(removeButton);
+		removeButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				specHolder.removeCondition(condition);
+				updateMainPane(specDef, specHolder, productList);
+			}
+		});
 		JPanel guarantee = new JPanel();
 		condPane.add(guarantee);	
 		guarantee.setLayout(new FlowLayout());
@@ -307,6 +324,12 @@ public class ValueEditor extends JDialog {
 
 	public boolean ok() {
 		return ok;
+	}
+
+	private void updateMainPane(SpecDef specDef, SpecHolder specHolder, Collection<String> productList) {
+		mainPanel.removeAll();
+		inputs.clear();
+		createMainPane(specDef, specHolder, productList, mainPanel);
 	}
 }
 class LocalSpecKey { 
