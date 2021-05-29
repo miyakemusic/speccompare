@@ -3,6 +3,7 @@ package positioningmap;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +26,7 @@ public class SpecDefEditor extends JDialog {
 		super(parent);
 		
 		this.setLocationRelativeTo(null);
-		this.setSize(new Dimension(500, 350));
+		this.setSize(new Dimension(500, 400));
 		this.getContentPane().setLayout(new BorderLayout());
 		
 		inputs = new InputContainer(specDef) {
@@ -51,9 +52,10 @@ public class SpecDefEditor extends JDialog {
 		panel.add(inputs.createEditableCombo("unit", units));
 		panel.add(inputs.createWidget("specType"));
 		panel.add(inputs.createWidget("better"));
+		
 		panel.add(inputs.createConfigList("choices", specDef.getChoices()));
 		
-//		panel.add(inputs.createEditableCombo("parentId", parents));
+//		panel.add(inputs.createEditableCombo("parentId", new ArrayList<String>(parents.keySet())));
 		JPanel p = new JPanel();
 		p.setLayout(new FlowLayout());
 		p.add(new JLabel("Parent"));
@@ -71,6 +73,8 @@ public class SpecDefEditor extends JDialog {
 				return;
 			}
 		});
+		
+		
 		
 		this.getContentPane().add(contorlBar = new ControlBar() {
 			@Override

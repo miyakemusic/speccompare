@@ -97,5 +97,11 @@ public class SpecHolder implements Cloneable {
 	public void removeCondition(String condition) {
 		this.specs.remove(condition);
 	}
+	public void replaceCondition(String prevString, String newString) {
+		if (this.specs.containsKey(prevString)) {
+			this.specs.put(newString, this.specs.get(prevString));
+			this.specs.remove(prevString);
+		}
+	}
 	
 }

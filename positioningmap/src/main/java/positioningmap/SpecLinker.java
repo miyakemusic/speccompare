@@ -21,7 +21,9 @@ public class SpecLinker {
 			});
 		});
 		ProductSpec productSpecs = specSheet.getProductSpecs().get(productName);
-		
+		if (productSpecs == null) {
+			return;
+		}
 		SpecHolder specHolder = productSpecs.getValues().get(this.instrumentTypeId);
 		
 		SpecValue specValue = specHolder.defaultSpec().getGuarantee();

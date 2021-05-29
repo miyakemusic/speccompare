@@ -114,6 +114,7 @@ public abstract class TableFrame extends JFrame {
 	abstract void onPositioningMap();
 	abstract void onConifgPositioningMap();
 	abstract Collection<String> productCondition(String name);
+	abstract Collection<String> replaceConditionName(String selecteHeaderName2, String prevString, String newString);
 	
 	private JTable table = null;
 	protected String selecteHeaderName;
@@ -521,12 +522,42 @@ public abstract class TableFrame extends JFrame {
 			}
 		});
 
+		JMenuItem menuCombination = new JMenuItem("Combination");
+		popupHeader.add(menuCombination);
+		menuCombination.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showCombination(selecteHeaderName);
+			}
+		});
 	}
 	
+	protected void showCombination(String productName) {
+		JFrame frame = new JFrame();
+		frame.setSize(new Dimension(800, 600));
+		frame.getContentPane().setLayout(new BorderLayout());
+		frame.getContentPane().add(new JScrollPane(new JTable(new CombinationModel(new CombinationModelInterface() {
+
+			@Override
+			public List<String> getConditions() {
+				return new ArrayList<String>(tableFrameInterface.conditionList(productName));
+			}
+
+			@Override
+			public String productName() {
+				return productName;
+			}
+			
+		}))), BorderLayout.CENTER);
+		frame.setVisible(true);
+	}
 	protected void showCondition(String selecteHeaderName2) {
 		Collection<String> conditions = productCondition(selecteHeaderName2);
 		MultipleChoiceUi ui =new MultipleChoiceUi(conditions, conditions) {
-			
+			@Override
+			protected Collection<String> onChange(String prevString, String newString) {
+				return replaceConditionName(selecteHeaderName2, prevString, newString);
+			}
 		};
 		JFrame frame = new JFrame();
 		frame.setSize(new Dimension(500, 300));
@@ -534,7 +565,7 @@ public abstract class TableFrame extends JFrame {
 		frame.getContentPane().add(ui, BorderLayout.CENTER);
 		frame.setVisible(true);
 	}
-	
+
 	protected void pastCell() {
 		copyCells(this.copiedRows, table.getColumnName(this.copiedColumn), this.table.getColumnName(table.getSelectedColumn()));
 	}

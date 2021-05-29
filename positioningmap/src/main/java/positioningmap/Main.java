@@ -2,6 +2,8 @@ package positioningmap;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -369,6 +371,13 @@ public class Main {
 				return specSheet.conditionList(name);
 			}
 
+			@Override
+			Collection<String> replaceConditionName(String productName, String prevString, String newString) {
+				Collection<String> ret = specSheet.replaceConditionName(productName, prevString, newString);
+				updateModel(specSheet, model, true);
+				return ret;
+			}
+
 		}.setVisible(true);
 	}
 
@@ -449,7 +458,12 @@ public class Main {
 	protected void saveToFile(SpecSheet specOtdr) {
 		try {
 			specOtdr.clean();
-			new ObjectMapper().writeValue(new File("otdr.spec"), specOtdr);
+			
+			if (!Files.exists(Paths.get("backup"))) {
+				Files.createDirectories(Paths.get("backup"));
+			}
+			Files.copy(Paths.get("otdr.spec"), Paths.get("backup/otdr.spec." + System.currentTimeMillis()));
+  			new ObjectMapper().writeValue(new File("otdr.spec"), specOtdr);
 			new ObjectMapper().writeValue(new File(FILTER_JSON), this.filterContainer);
 		} catch (IOException e) {
 			e.printStackTrace();

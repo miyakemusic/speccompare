@@ -24,7 +24,7 @@ public class MyTextArea extends JTable {//JList<String> {
 	private List<String> set = new ArrayList<>();
 
 	private AbstractTableModel model;
-	
+	protected Collection<String> onChange(String prevString, String newString) {return new ArrayList<String>();};
 	public MyTextArea() {
 		this.setModel(model = new AbstractTableModel() {
 
@@ -41,6 +41,17 @@ public class MyTextArea extends JTable {//JList<String> {
 			@Override
 			public Object getValueAt(int rowIndex, int columnIndex) {
 				return set.get(rowIndex);
+			}
+
+			@Override
+			public boolean isCellEditable(int rowIndex, int columnIndex) {
+				return true;
+			}
+
+			@Override
+			public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+				set = new ArrayList<String>(onChange(set.get(rowIndex), aValue.toString()));
+				model.fireTableDataChanged();
 			}
 			
 		});

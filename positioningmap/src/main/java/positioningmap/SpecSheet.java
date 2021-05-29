@@ -208,7 +208,7 @@ public class SpecSheet {
 		new MapCopier<String, ProductSpec>(this.productSpecs) {
 			@Override
 			protected void handle(String key, ProductSpec value, Map<String, ProductSpec> newMap) {
-				newMap.put(key, value);
+				newMap.put(key, value.clone());
 				if (key.equals(name)) {
 					String[] tmp = key.split("\n");
 					String newName = tmp[0];
@@ -335,6 +335,10 @@ public class SpecSheet {
 
 	public Collection<String> conditionList(String productName) {
 		return this.productSpecs.get(productName).getConditions();
+	}
+
+	public Collection<String> replaceConditionName(String productName, String prevString, String newString) {
+		return this.productSpecs.get(productName).replaceCondtionName(prevString, newString);
 	}
 
 }

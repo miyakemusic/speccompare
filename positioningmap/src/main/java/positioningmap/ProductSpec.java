@@ -2,6 +2,7 @@ package positioningmap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -9,17 +10,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class ProductSpec implements Cloneable {
 
 	private Map<String, SpecHolder> values = new HashMap<>();
-	private Set<String> conditions = new LinkedHashSet<String>();
+	private List<String> conditions = new ArrayList<String>();
 	
-	private SpecHolderInterface specHolderInterface = new SpecHolderInterface() {
-		@Override
-		public void onAddCondition(String string) {
-			conditions.add(string);
-		}
-	};
+	private ConditionContainer conditionContainer = new ConditionContainer();
+	
+	private SpecHolderInterface specHolderInterface;
 	
 	public Map<String, SpecHolder> getValues() {
 		return values;
@@ -29,7 +29,20 @@ public class ProductSpec implements Cloneable {
 		this.values = values;
 	}
 
-	public ProductSpec() {}
+	public ProductSpec() {
+		createSpecHolderInterface();
+	}
+	
+	private void createSpecHolderInterface() {
+		specHolderInterface = new SpecHolderInterface() {
+			@Override
+			public void onAddCondition(String string) {
+				if (!conditions.contains(string)) {
+					conditions.add(string);
+				}
+			}
+		};
+	}
 
 	private void guarantee(String id, SpecValue v) {
 		SpecHolder specHolder = specHolder(id);
@@ -45,7 +58,7 @@ public class ProductSpec implements Cloneable {
 		createTypical(id, new SpecValue(v));
 	}
 	
-	SpecHolder specHolder(String id) {
+	public SpecHolder specHolder(String id) {
 		if (!this.values.containsKey(id)) {
 			this.values.put(id, new SpecHolder(specHolderInterface));
 		}
@@ -81,7 +94,8 @@ public class ProductSpec implements Cloneable {
 			for (Map.Entry<String, SpecHolder> entry: this.values.entrySet()) {
 				ret.values.put(entry.getKey(), entry.getValue().clone());
 			}
-			ret.conditions = new LinkedHashSet<String>(this.conditions);
+			ret.conditions = new ArrayList<String>(this.conditions);
+			ret.init();
 			return ret;
 		} catch (CloneNotSupportedException e) {
 			e.printStackTrace();
@@ -112,8 +126,9 @@ public class ProductSpec implements Cloneable {
 		});
 	}
 
-	public void setConditions(Set<String> conditions) {
+	public void setConditions(List<String> conditions) {
 		this.conditions = conditions;
+//		this.conditionContainer = new ConditionContainer(conditions);
 	}
 
 	public Collection<String> getConditions() {
@@ -121,6 +136,7 @@ public class ProductSpec implements Cloneable {
 	}
 
 	public void init() {
+		createSpecHolderInterface();
 		this.values.forEach((id, specHolder) -> {
 			specHolder.setSpecHolderInterface(specHolderInterface);
 		});
@@ -134,4 +150,23 @@ public class ProductSpec implements Cloneable {
 			specHolderInterface.onAddCondition(condition);
 		}));
 	}
+
+	public Collection<String> replaceCondtionName(String prevString, String newString) {
+		this.conditions.remove(prevString);
+		this.conditions.add(newString);
+		this.values.forEach((id, specHolder) -> {
+			specHolder.replaceCondition(prevString, newString);
+		});
+		Collections.sort(this.conditions);
+		return conditions;
+	}
+
+	public ConditionContainer getConditionContainer() {
+		return conditionContainer;
+	}
+
+	public void setConditionContainer(ConditionContainer conditionContainer) {
+		this.conditionContainer = conditionContainer;
+	}
+	
 }

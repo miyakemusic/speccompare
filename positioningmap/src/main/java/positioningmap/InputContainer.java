@@ -271,7 +271,7 @@ public class InputContainer {
 				return null;
 			}
 		};
-		panel.setPreferredSize(new Dimension(500, 300));
+		panel.setPreferredSize(new Dimension(500, 40));
 		JTextField textField = new JTextField();
 		textField.setPreferredSize(new Dimension(100, 24));
 		panel.add(textField);

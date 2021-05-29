@@ -29,13 +29,13 @@ public class TextGenerator {
 			@Override
 			protected boolean onVaridation(SpecValue guarantee, SpecValue typical, SpecValue specValue2) {
 				if (guarantee != null && guarantee.getDefined()) {
-					createTextReturnValue += guarantee.getX() + spec.getUnit();
+					createTextReturnValue += "Å}" + guarantee.getX() + spec.getUnit();
 				}
 				if (typical != null && typical.getDefined()) {
 					if (!createTextReturnValue.isEmpty()) {
 						createTextReturnValue += "/";
 					}
-					createTextReturnValue += typical.getX() + "(Typ.)";
+					createTextReturnValue += "Å}" + typical.getX() + "(Typ.)";
 				}
 				return false;
 			}
