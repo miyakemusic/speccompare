@@ -9,6 +9,8 @@ interface CombinationModelInterface {
 	List<String> getConditions();
 
 	String productName();
+
+	ConditionContainer container();
 	
 }
 
@@ -16,7 +18,7 @@ public class CombinationModel extends AbstractTableModel {
 	private List<String> headers;
 	
 	public CombinationModel(CombinationModelInterface combinationModelInterface) {
-		ConditionContainer conditionContainer = new ConditionContainer(combinationModelInterface.getConditions());
+		ConditionContainer conditionContainer = combinationModelInterface.container();//new ConditionContainer(combinationModelInterface.getConditions());
 		ProductName productName = new ProductName(combinationModelInterface.productName());
 
 		headers = analyze(conditionContainer, productName);

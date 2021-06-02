@@ -333,12 +333,16 @@ public class SpecSheet {
 		this.getValue(id, model).clearValue();
 	}
 
-	public Collection<String> conditionList(String productName) {
-		return this.productSpecs.get(productName).getConditions();
+//	public Collection<String> conditionList(String productName) {
+//		return this.productSpecs.get(productName).getConditions();
+//	}
+
+	public ConditionContainer replaceConditionName(String productName, String prevString, String newString) {
+		return this.productSpecs.get(productName).replaceCondtionName(prevString, newString);
 	}
 
-	public Collection<String> replaceConditionName(String productName, String prevString, String newString) {
-		return this.productSpecs.get(productName).replaceCondtionName(prevString, newString);
+	public ConditionContainer productConditionConfig(String productName) {
+		return this.productSpecs.get(productName).getConditionContainer();
 	}
 
 }

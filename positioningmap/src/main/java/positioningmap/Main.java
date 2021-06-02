@@ -203,10 +203,10 @@ public class Main {
 				return specSheet.products().keySet();
 			}
 
-			@Override
-			public Collection<String> conditionList(String productName) {
-				return specSheet.conditionList(productName);
-			}
+//			@Override
+//			public Collection<String> conditionList(String productName) {
+//				return specSheet.conditionList(productName);
+//			}
 
 		};
 		
@@ -366,16 +366,21 @@ public class Main {
 				updateModel(specSheet, model, false);
 			}
 
+//			@Override
+//			Collection<String> productCondition(String name) {
+//				return specSheet.conditionList(name);
+//			}
+
 			@Override
-			Collection<String> productCondition(String name) {
-				return specSheet.conditionList(name);
+			ConditionContainer replaceConditionName(String productName, String prevString, String newString) {
+				ConditionContainer ret = specSheet.replaceConditionName(productName, prevString, newString);
+				updateModel(specSheet, model, true);
+				return ret;
 			}
 
 			@Override
-			Collection<String> replaceConditionName(String productName, String prevString, String newString) {
-				Collection<String> ret = specSheet.replaceConditionName(productName, prevString, newString);
-				updateModel(specSheet, model, true);
-				return ret;
+			ConditionContainer productConditionConfig(String productName) {
+				return specSheet.productConditionConfig(productName);
 			}
 
 		}.setVisible(true);

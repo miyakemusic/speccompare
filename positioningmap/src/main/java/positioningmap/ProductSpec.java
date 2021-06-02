@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class ProductSpec implements Cloneable {
 
 	private Map<String, SpecHolder> values = new HashMap<>();
-	private List<String> conditions = new ArrayList<String>();
+//	private List<String> conditions = new ArrayList<String>();
 	
 	private ConditionContainer conditionContainer = new ConditionContainer();
 	
@@ -37,9 +37,10 @@ public class ProductSpec implements Cloneable {
 		specHolderInterface = new SpecHolderInterface() {
 			@Override
 			public void onAddCondition(String string) {
-				if (!conditions.contains(string)) {
-					conditions.add(string);
-				}
+				conditionContainer.addCondition(string);
+//				if (!conditions.contains(string)) {
+//					conditions.add(string);
+//				}
 			}
 		};
 	}
@@ -94,7 +95,8 @@ public class ProductSpec implements Cloneable {
 			for (Map.Entry<String, SpecHolder> entry: this.values.entrySet()) {
 				ret.values.put(entry.getKey(), entry.getValue().clone());
 			}
-			ret.conditions = new ArrayList<String>(this.conditions);
+			//ret.conditions = new ArrayList<String>(this.conditions);
+			ret.conditionContainer = this.conditionContainer.clone();
 			ret.init();
 			return ret;
 		} catch (CloneNotSupportedException e) {
@@ -126,14 +128,19 @@ public class ProductSpec implements Cloneable {
 		});
 	}
 
-	public void setConditions(List<String> conditions) {
-		this.conditions = conditions;
+//	public void setConditions(List<String> conditions) {
+		
+//		conditions.forEach(c -> {
+//			conditionContainer.addCondition(c);
+//		});
+//		System.out.println(conditions);
+//		this.conditions = conditions;
 //		this.conditionContainer = new ConditionContainer(conditions);
-	}
+//	}
 
-	public Collection<String> getConditions() {
-		return conditions;
-	}
+//	public Collection<String> getConditions() {
+//		return conditions;
+//	}
 
 	public void init() {
 		createSpecHolderInterface();
@@ -151,14 +158,16 @@ public class ProductSpec implements Cloneable {
 		}));
 	}
 
-	public Collection<String> replaceCondtionName(String prevString, String newString) {
-		this.conditions.remove(prevString);
-		this.conditions.add(newString);
-		this.values.forEach((id, specHolder) -> {
-			specHolder.replaceCondition(prevString, newString);
-		});
-		Collections.sort(this.conditions);
-		return conditions;
+	public ConditionContainer replaceCondtionName(String prevString, String newString) {
+//		this.conditions.remove(prevString);
+//		this.conditions.add(newString);
+//		this.values.forEach((id, specHolder) -> {
+//			specHolder.replaceCondition(prevString, newString);
+//		});
+//		Collections.sort(this.conditions);
+//		return conditions;
+		this.conditionContainer.replace(prevString, newString);
+		return this.conditionContainer;
 	}
 
 	public ConditionContainer getConditionContainer() {

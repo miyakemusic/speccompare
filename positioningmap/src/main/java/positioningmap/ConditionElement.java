@@ -1,6 +1,6 @@
 package positioningmap;
 
-public class ConditionElement {
+public class ConditionElement implements Cloneable {
 	public ConditionElement() {}
 	public ConditionElement(String string) {
 		String[] tmp = string.split("[()]+");
@@ -11,4 +11,16 @@ public class ConditionElement {
 	}
 	public String value;
 	public String description;
+	@Override
+	protected ConditionElement clone() {
+		try {
+			return (ConditionElement)super.clone();
+		} catch (CloneNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
 }

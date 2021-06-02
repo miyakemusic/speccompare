@@ -84,7 +84,7 @@ interface TableFrameInterface {
 
 	Collection<String> productList();
 
-	Collection<String> conditionList(String model);	
+//	Collection<String> conditionList(String model);	
 }
 
 public abstract class TableFrame extends JFrame {
@@ -113,8 +113,9 @@ public abstract class TableFrame extends JFrame {
 	abstract void clearValue(int[] row, int[] columns);
 	abstract void onPositioningMap();
 	abstract void onConifgPositioningMap();
-	abstract Collection<String> productCondition(String name);
-	abstract Collection<String> replaceConditionName(String selecteHeaderName2, String prevString, String newString);
+//	abstract Collection<String> productCondition(String name);
+	abstract ConditionContainer productConditionConfig(String name);
+	abstract ConditionContainer replaceConditionName(String selecteHeaderName2, String prevString, String newString);
 	
 	private JTable table = null;
 	protected String selecteHeaderName;
@@ -540,32 +541,56 @@ public abstract class TableFrame extends JFrame {
 
 			@Override
 			public List<String> getConditions() {
-				return new ArrayList<String>(tableFrameInterface.conditionList(productName));
+				return productConditionConfig(productName).conditionNameList();
+				//return new ArrayList<String>(tableFrameInterface.conditionList(productName));
 			}
 
 			@Override
 			public String productName() {
 				return productName;
 			}
+
+			@Override
+			public ConditionContainer container() {
+				return productConditionConfig(productName);
+			}
 			
 		}))), BorderLayout.CENTER);
 		frame.setVisible(true);
 	}
-	protected void showCondition(String selecteHeaderName2) {
-		Collection<String> conditions = productCondition(selecteHeaderName2);
-		MultipleChoiceUi ui =new MultipleChoiceUi(conditions, conditions) {
-			@Override
-			protected Collection<String> onChange(String prevString, String newString) {
-				return replaceConditionName(selecteHeaderName2, prevString, newString);
-			}
-		};
-		JFrame frame = new JFrame();
-		frame.setSize(new Dimension(500, 300));
-		frame.getContentPane().setLayout(new BorderLayout());
-		frame.getContentPane().add(ui, BorderLayout.CENTER);
-		frame.setVisible(true);
-	}
+//	private void showCondition2(String selecteHeaderName2) {
+//		Collection<String> conditions = productCondition(selecteHeaderName2);
+//		MultipleChoiceUi ui =new MultipleChoiceUi(conditions, conditions) {
+//			@Override
+//			protected Collection<String> onChange(String prevString, String newString) {
+//				return replaceConditionName(selecteHeaderName2, prevString, newString);
+//			}
+//		};
+//		JFrame frame = new JFrame();
+//		frame.setSize(new Dimension(500, 300));
+//		frame.getContentPane().setLayout(new BorderLayout());
+//		frame.getContentPane().add(ui, BorderLayout.CENTER);
+//		frame.setVisible(true);
+//	}
 
+	private void showCondition(String selecteHeaderName2) {
+		ConditionContainer conditions = productConditionConfig(selecteHeaderName2);
+		ConditionContainerUi ui = new ConditionContainerUi(conditions) {
+
+			@Override
+			ConditionContainer replaceName(String prevCondition, String newCondition) {
+				return replaceConditionName(selecteHeaderName2, prevCondition, newCondition);
+			}
+
+		};
+		ui.setVisible(true);
+//		JFrame frame = new JFrame();
+//		frame.setSize(new Dimension(500, 300));
+//		frame.getContentPane().setLayout(new BorderLayout());
+//		frame.getContentPane().add(ui, BorderLayout.CENTER);
+//		frame.setVisible(true);
+	}
+	
 	protected void pastCell() {
 		copyCells(this.copiedRows, table.getColumnName(this.copiedColumn), this.table.getColumnName(table.getSelectedColumn()));
 	}
@@ -583,7 +608,9 @@ public abstract class TableFrame extends JFrame {
 	protected void showValueEditor(String model, SpecDef specDef, SpecHolder specHolder) {
 //		if (valueEditorDialog == null) {
 			valueEditorDialog = new ValueEditor(this, model, specDef, specHolder, 
-					tableFrameInterface.productList(), tableFrameInterface.conditionList(model));
+					tableFrameInterface.productList(), 
+					productConditionConfig(model).conditionNameList());
+					//tableFrameInterface.conditionList(model));
 			valueEditorDialog.setModal(true);
 //		}
 		valueEditorDialog.setVisible(true);
