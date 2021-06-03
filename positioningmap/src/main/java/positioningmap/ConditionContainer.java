@@ -88,5 +88,49 @@ public class ConditionContainer implements Cloneable {
 		this.conditions.remove(tmp[0]);
 		this.addCondition(newString);
 	}
+
+	public void updateValue(String condition, String value, String newValue) {
+		ConditionValue v = this.conditions.get(condition);
+		for (ConditionElement e: v.getElements()) {
+			if (e.value.equals(value)) {
+				e.value = newValue;
+				break;
+			}
+		}
+	}
+
+	public void updateDescription(String condition, String value, String description, String string) {
+		ConditionValue v = conditions.get(condition);
+		for (ConditionElement e: v.getElements()) {
+			if (e.value.equals(value)) {
+				e.description = string;
+				break;
+			}
+		}	
+	}
+
+	public void updateCondition(String condition, String string) {
+		ConditionValue v = conditions.get(condition);
+		conditions.remove(condition);
+		conditions.put(string, v);
+	}
+
+	public void addValue(String condition, String string) {
+		this.conditions.get(condition).getElements().add(new ConditionElement(string));
+	}
+
+	public void removeCondition(String condition, String value) {
+		ConditionValue v = conditions.get(condition);
+		for (ConditionElement e: v.getElements()) {
+			if (e.value.equals(value)) {
+				v.getElements().remove(e);
+				break;
+			}
+		}
+	}
+
+	public void updateMandatory(String condition, Boolean mandatory, Boolean aValue) {
+		this.conditions.get(condition).setMandatory(aValue);
+	}
 	
 }

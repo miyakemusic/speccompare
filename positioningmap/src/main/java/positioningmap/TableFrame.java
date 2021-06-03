@@ -584,11 +584,6 @@ public abstract class TableFrame extends JFrame {
 
 		};
 		ui.setVisible(true);
-//		JFrame frame = new JFrame();
-//		frame.setSize(new Dimension(500, 300));
-//		frame.getContentPane().setLayout(new BorderLayout());
-//		frame.getContentPane().add(ui, BorderLayout.CENTER);
-//		frame.setVisible(true);
 	}
 	
 	protected void pastCell() {
@@ -608,7 +603,7 @@ public abstract class TableFrame extends JFrame {
 	protected void showValueEditor(String model, SpecDef specDef, SpecHolder specHolder) {
 //		if (valueEditorDialog == null) {
 			valueEditorDialog = new ValueEditor(this, model, specDef, specHolder, 
-					tableFrameInterface.productList(), 
+					tableFrameInterface.productList(), this.productConditionConfig(model),
 					productConditionConfig(model).conditionNameList());
 					//tableFrameInterface.conditionList(model));
 			valueEditorDialog.setModal(true);

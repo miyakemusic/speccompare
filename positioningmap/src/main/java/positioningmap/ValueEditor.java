@@ -42,7 +42,7 @@ public class ValueEditor extends JDialog {
 	private JPanel mainPanel;
 	
 	public ValueEditor(JFrame parent, String productName, SpecDef specDef, SpecHolder specHolder, 
-			Collection<String> productList, Collection<String> conditions) {
+			Collection<String> productList, ConditionContainer conditionContainer, Collection<String> conditions) {
 		super(parent);
 		setLocationRelativeTo(null);
 		int height = 0;
@@ -63,18 +63,30 @@ public class ValueEditor extends JDialog {
 		addCondition.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				//String value = JOptionPane.showInputDialog(this, "Condition Name");
-				MyComboDialog dlg = new MyComboDialog(conditions) {
+				
+//				MyComboDialog dlg = new MyComboDialog(conditions) {
+//
+//					@Override
+//					protected void onOk(String value) {
+//						specHolder.addCondition(value);
+//						updateMainPane(specDef, specHolder, productList);
+//					}
+//					
+//				};
+//				dlg.setModal(true);
+//				dlg.setVisible(true);
+
+				ConditionContainerUi ui = new ConditionContainerUi(conditionContainer) {
 
 					@Override
-					protected void onOk(String value) {
-						specHolder.addCondition(value);
-						updateMainPane(specDef, specHolder, productList);
+					ConditionContainer replaceName(String prevCondition, String newCondition) {
+						// TODO Auto-generated method stub
+						return null;
 					}
-					
+
 				};
-				dlg.setModal(true);
-				dlg.setVisible(true);
+				ui.setModal(true);
+				ui.setVisible(true);
 			}
 		});
 
